@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Control">
+<meta name="theme-color" content="#0a1628">
+<title>Control Antropométrico</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #060d1a;
+    --bg2: #0d1f35;
+    --bg3: #132840;
+    --accent: #00d4aa;
+    --accent2: #ff6b6b;
+    --accent3: #ffd166;
+    --text: #e8f4f8;
+    --muted: #6a8fa8;
+    --card: rgba(13,31,53,0.85);
+    --border: rgba(0,212,170,0.15);
+    --good: #00d4aa;
+    --bad: #ff6b6b;
+    --warn: #ffd166;
+    --radius: 18px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background mesh */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(0,212,170,0.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,100,200,0.07) 0%, transparent 50%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(6,13,26,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+    gap: 4px;
+  }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn svg { width:22px; height:22px; }
+
+  /* PAGES */
+  .page { 
+    display: none; 
+    position: relative; 
+    z-index: 1;
+    padding: 0 0 90px 0;
+    min-height: 100vh;
+  }
+  .page.active { display: block; }
+
+  /* HEADER */
+  .header {
+    padding: 56px 20px 20px;
+    background: linear-gradient(180deg, rgba(0,212,170,0.06) 0%, transparent 100%);
+  }
+  .header-sub {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    overflow: hidden;
+  }
+  .card-pad { padding: 18px; }
+  .section { padding: 0 16px; margin-bottom: 16px; }
+
+  /* STAT GRID */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 0 16px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height:2px;
+    background: var(--indicator-color, var(--accent));
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .stat-unit { font-size: 12px; color: var(--muted); margin-left: 2px; }
+  .stat-delta {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .stat-range {
+    font-size: 9px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .delta-good { color: var(--good); }
+  .delta-bad { color: var(--bad); }
+  .delta-neutral { color: var(--muted); }
+
+  /* PEPP CARD */
+  .pepp-card {
+    margin: 0 16px 16px;
+    background: linear-gradient(135deg, rgba(0,212,170,0.12) 0%, rgba(0,100,200,0.08) 100%);
+    border: 1px solid rgba(0,212,170,0.3);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .pepp-icon {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: rgba(0,212,170,0.15);
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .pepp-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .pepp-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--text);
+    line-height: 1;
+  }
+  .pepp-desc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  /* CHART */
+  .chart-wrap {
+    padding: 18px;
+    position: relative;
+  }
+  .chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .chart-sub { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
+  canvas { max-width: 100%; }
+
+  /* HISTORY */
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    gap: 14px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-dot {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(0,212,170,0.1);
+    border: 1.5px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .history-info { flex: 1; }
+  .history-date { font-size: 13px; font-weight: 600; color: var(--text); }
+  .history-weight { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .history-pepp {
+    font-size: 13px;
+    font-weight: 700;
+    text-align: right;
+  }
+  .history-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .btn-del {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 8px;
+    color: var(--bad);
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  /* FORM */
+  .form-header {
+    padding: 56px 20px 20px;
+    background: linear-gradient(180deg, rgba(0,212,170,0.06) 0%, transparent 100%);
+  }
+  .form-body { padding: 0 16px 16px; }
+  .form-group { margin-bottom: 14px; }
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 7px;
+  }
+  .label-hint { 
+    font-size: 10px; 
+    color: rgba(106,143,168,0.7);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  input[type="date"],
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg3);
+    border: 1.5px solid rgba(0,212,170,0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+  
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #00a882);
+    border: none;
+    border-radius: 14px;
+    padding: 17px;
+    color: #060d1a;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: opacity 0.2s, transform 0.1s;
+    margin-top: 8px;
+  }
+  .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
+
+  /* OPTIMAL INDICATORS */
+  .optimal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .optimal-row:last-child { border-bottom: none; }
+  .optimal-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .optimal-range { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .status-pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .pill-ok { background: rgba(0,212,170,0.15); color: var(--good); }
+  .pill-warn { background: rgba(255,209,102,0.15); color: var(--warn); }
+  .pill-bad { background: rgba(255,107,107,0.15); color: var(--bad); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.5; }
+  .empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .empty-desc { font-size: 13px; line-height: 1.5; }
+
+  /* TUTORIAL */
+  .tut-step {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .tut-step:last-child { border-bottom: none; }
+  .tut-num {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), #00a882);
+    color: #060d1a;
+    font-weight: 800;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .tut-content h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .tut-content p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .tut-img {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--accent);
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: var(--accent);
+    color: #060d1a;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2);
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    width: 100%;
+    border-top: 1px solid var(--border);
+  }
+  .modal-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+  .modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .page.active .card,
+  .page.active .stat-card,
+  .page.active .pepp-card {
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.3px;
+    margin-bottom: 12px;
+    padding-top: 4px;
+  }
+
+  /* scroll behavior */
+  .page { 
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Tab indicator dots */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    padding: 7px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: rgba(0,212,170,0.12);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .chart-tabs { display: none; }
+  .chart-tabs.active { display: block; }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: var(--muted); }
+  .info-val { font-weight: 600; }
+
+  /* DELTA CHART POSITIVE/NEGATIVE ANNOTATION */
+  .delta-axis-zero {
+    border-top: 1px dashed rgba(255,255,255,0.15);
+  }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- PAGE: DASHBOARD -->
+<div class="page active" id="page-dashboard">
+  <div class="header">
+    <div class="header-sub">Panel Principal</div>
+    <h1>Mi Control<br>Antropométrico</h1>
+  </div>
+
+  <!-- Latest PEPP -->
+  <div id="pepp-section"></div>
+
+  <!-- Stats grid -->
+  <div class="stat-grid" id="stats-grid"></div>
+
+  <!-- Status indicators -->
+  <div class="section">
+    <div class="card">
+      <div class="card-pad">
+        <div class="section-title">Estado de Parámetros</div>
+        <div id="optimal-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart section: Evolución -->
+  <div class="section">
+    <div class="card">
+      <div class="chart-wrap">
+        <div class="chart-title">Evolución del Parámetro</div>
+        <div class="chart-sub">Tendencia histórica — toca un punto para ver detalle</div>
+        <div class="tabs" id="chart-tabs">
+          <button class="tab-btn active" onclick="switchChart('weight')">Peso</button>
+          <button class="tab-btn" onclick="switchChart('grasa')">Grasa</button>
+          <button class="tab-btn" onclick="switchChart('muscular')">Músculo</button>
+          <button class="tab-btn" onclick="switchChart('visceral')">Visceral</button>
+          <button class="tab-btn" onclick="switchChart('bmi')">BMI</button>
+        </div>
+        <canvas id="mainChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart: Cambio entre controles (barras sube/baja) -->
+  <div class="section">
+    <div class="card">
+      <div class="chart-wrap">
+        <div class="chart-title">📊 Cambio entre Controles</div>
+        <div class="chart-sub">Verde = bajó · Rojo = subió · por control</div>
+        <div class="tabs" id="delta-tabs">
+          <button class="tab-btn active" onclick="switchDelta('peso')">Peso</button>
+          <button class="tab-btn" onclick="switchDelta('grasa')">Grasa</button>
+          <button class="tab-btn" onclick="switchDelta('muscular')">Músculo</button>
+          <button class="tab-btn" onclick="switchDelta('visceral')">Visceral</button>
+          <button class="tab-btn" onclick="switchDelta('perimetro')">Perím.</button>
+        </div>
+        <canvas id="deltaChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart: Radar vs rangos óptimos -->
+  <div class="section" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="chart-wrap">
+        <div class="chart-title">🎯 Perfil vs Valores Óptimos</div>
+        <div class="chart-sub">Cuánto te acercas a cada rango ideal (último control)</div>
+        <canvas id="radarChart" height="260"></canvas>
+        <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+            <div style="width:12px;height:3px;background:#00d4aa;border-radius:2px"></div> Tu perfil
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+            <div style="width:12px;height:3px;background:rgba(255,255,255,0.2);border-radius:2px"></div> Zona óptima
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: REGISTRO -->
+<div class="page" id="page-registro">
+  <div class="form-header">
+    <div class="header-sub">Nuevo Registro</div>
+    <h1>Ingresar<br>Medidas</h1>
+  </div>
+  <div class="form-body">
+    <div class="card card-pad">
+      <div class="form-group">
+        <label>Fecha del control</label>
+        <input type="date" id="inp-fecha">
+      </div>
+      <div class="form-group">
+        <label>Peso Corporal <span class="label-hint">kg</span></label>
+        <input type="number" id="inp-peso" placeholder="ej. 87.3" step="0.1" min="30" max="300">
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Per. Abdominal <span class="label-hint">cm</span></label>
+          <input type="number" id="inp-perimetro" placeholder="ej. 107" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>BMI <span class="label-hint">kg/m²</span></label>
+          <input type="number" id="inp-bmi" placeholder="ej. 31.3" step="0.1">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Masa Grasa <span class="label-hint">%</span></label>
+          <input type="number" id="inp-grasa" placeholder="ej. 31.3" step="0.1">
+        </div>
+        <div class="form-group">
+          <label>Masa Muscular <span class="label-hint">%</span></label>
+          <input type="number" id="inp-muscular" placeholder="ej. 30.4" step="0.1">
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Grasa Visceral <span class="label-hint">nivel</span></label>
+          <input type="number" id="inp-visceral" placeholder="ej. 18" step="1">
+        </div>
+        <div class="form-group">
+          <label>RM <span class="label-hint">opcional</span></label>
+          <input type="number" id="inp-rm" placeholder="ej. 94.0" step="0.1">
+        </div>
+      </div>
+
+      <div style="background:rgba(0,212,170,0.07); border:1px solid rgba(0,212,170,0.2); border-radius:12px; padding:14px; margin-bottom:16px;">
+        <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--accent); margin-bottom:6px;">PEPP CALCULADO AUTOMÁTICAMENTE</div>
+        <div style="font-size:12px; color:var(--muted); line-height:1.5;">
+          El <strong style="color:var(--text);">% de Exceso de Peso Perdido (PEPP)</strong> se calcula automáticamente comparando el peso ingresado con el registro anterior.
+        </div>
+        <div id="pepp-preview" style="margin-top:10px; font-family:'DM Serif Display',serif; font-size:22px; color:var(--text);"></div>
+      </div>
+
+      <button class="btn-primary" onclick="saveRecord()">Guardar Registro</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: HISTORIAL -->
+<div class="page" id="page-historial">
+  <div class="header">
+    <div class="header-sub">Todos los registros</div>
+    <h1>Historial</h1>
+  </div>
+  <div class="section">
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<!-- PAGE: TUTORIAL -->
+<div class="page" id="page-tutorial">
+  <div class="header">
+    <div class="header-sub">Guía de uso</div>
+    <h1>Tutorial<br>de la App</h1>
+  </div>
+  <div class="section">
+
+    <!-- Instalación iPhone -->
+    <div class="card card-pad" style="margin-bottom:16px;">
+      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">📱 Instalar en iPhone</div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Convierte esta app en una app nativa sin ir al App Store</div>
+
+      <div class="tut-step">
+        <div class="tut-num">1</div>
+        <div class="tut-content">
+          <h4>Abre en Safari</h4>
+          <p>Esta app DEBE abrirse en Safari de iPhone. No funciona como app instalable desde Chrome o Firefox en iOS.</p>
+          <div class="tut-img">
+            🧭 <span>Copiar la URL y pegar en Safari</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tut-step">
+        <div class="tut-num">2</div>
+        <div class="tut-content">
+          <h4>Toca el botón Compartir</h4>
+          <p>En la barra inferior de Safari, toca el ícono de compartir — es un cuadrado con una flecha apuntando hacia arriba <strong style="color:var(--accent)">⬆️</strong>.</p>
+        </div>
+      </div>
+
+      <div class="tut-step">
+        <div class="tut-num">3</div>
+        <div class="tut-content">
+          <h4>Selecciona "Añadir a pantalla de inicio"</h4>
+          <p>Desliza hacia abajo en el menú de compartir hasta encontrar la opción <strong style="color:var(--accent)">"Añadir a pantalla de inicio"</strong> y tócala.</p>
+          <div class="tut-img">
+            ➕ <span>Añadir a pantalla de inicio</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tut-step">
+        <div class="tut-num">4</div>
+        <div class="tut-content">
+          <h4>Confirmar el nombre</h4>
+          <p>Aparecerá una pantalla con el nombre "Mi Control". Toca <strong style="color:var(--accent)">"Añadir"</strong> en la esquina superior derecha.</p>
+        </div>
+      </div>
+
+      <div class="tut-step">
+        <div class="tut-num">5</div>
+        <div class="tut-content">
+          <h4>¡Listo! Abre desde el inicio</h4>
+          <p>El ícono de la app aparecerá en tu pantalla de inicio de iPhone. Al abrirla desde ahí, se verá en pantalla completa como una app nativa.</p>
+          <div class="tut-img">
+            ✅ <span>La app funciona sin conexión a internet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cómo usar -->
+    <div class="card card-pad" style="margin-bottom:16px;">
+      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">🏋️ Cómo usar la App</div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Guía para registrar y entender tus datos</div>
+
+      <div class="tut-step">
+        <div class="tut-num">1</div>
+        <div class="tut-content">
+          <h4>Registrar tu primer control</h4>
+          <p>Toca el ícono ✏️ de la barra inferior para ir a "Registro". Ingresa todos los datos de tu control nutricional. La fecha se llena automáticamente con hoy.</p>
+        </div>
+      </div>
+
+      <div class="tut-step">
+        <div class="tut-num">2</div>
+        <div class="tut-content">
+          <h4>El PEPP se calcula solo</h4>
+          <p>Al ingresar el peso, la app calcula automáticamente el <strong style="color:var(--accent)">PEPP (%)</strong> — el porcentaje de exceso de peso perdido — comparándolo con el registro anterior.</p>
+        </div>
+      </div>
+
+      <div class="tut-step">
+        <div class="tut-num">3</div>
+        <div class="tut-content">
+          <h4>Revisar el Dashboard</h4>
+          <p>El panel principal muestra tus últimas medidas, si están dentro del rango óptimo, y las gráficas de evolución. Usa las pestañas para ver diferentes indicadores.</p>
+        </div>
+      </div>
+
+      <div class="tut-step">
+        <div class="tut-num">4</div>
+        <div class="tut-content">
+          <h4>Historial completo</h4>
+          <p>En la sección 📋 Historial verás todos tus registros con el PEPP de cada semana. Puedes eliminar registros incorrectos tocando el botón rojo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parámetros -->
+    <div class="card card-pad" style="margin-bottom:16px;">
+      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">📊 Valores de Referencia</div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Rangos óptimos para hombres adultos</div>
+      <div class="info-row"><span class="info-label">Perímetro Abdominal</span><span class="info-val" style="color:var(--accent)">&lt; 94 cm</span></div>
+      <div class="info-row"><span class="info-label">Masa Grasa</span><span class="info-val" style="color:var(--accent)">13 – 24 %</span></div>
+      <div class="info-row"><span class="info-label">Masa Muscular</span><span class="info-val" style="color:var(--accent)">32.9 – 38.9 %</span></div>
+      <div class="info-row"><span class="info-label">Grasa Visceral</span><span class="info-val" style="color:var(--accent)">&lt;= 9</span></div>
+      <div class="info-row"><span class="info-label">BMI (Hombre)</span><span class="info-val" style="color:var(--accent)">18.5 – 24.9</span></div>
+      <div class="info-row"><span class="info-label">PEPP positivo</span><span class="info-val" style="color:var(--accent)">Pérdida de peso</span></div>
+      <div class="info-row"><span class="info-label">PEPP negativo</span><span class="info-val" style="color:var(--bad)">Aumento de peso</span></div>
+    </div>
+
+    <!-- Almacenamiento -->
+    <div class="card card-pad" style="margin-bottom:16px;">
+      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">💾 Almacenamiento de datos</div>
+      <div style="font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.6;">
+        Los datos se guardan en el almacenamiento local de tu iPhone de forma segura. <strong style="color:var(--text)">Los datos persisten aunque cierres la app</strong>, pero se borran si limpias los datos de Safari. Se recomienda exportar periódicamente.
+      </div>
+      <button class="btn-primary" onclick="exportData()" style="margin-top:0;">Exportar datos (JSON)</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav>
+  <button class="nav-btn active" onclick="goPage('dashboard', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </button>
+  <button class="nav-btn" onclick="goPage('registro', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Registro
+  </button>
+  <button class="nav-btn" onclick="goPage('historial', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+    Historial
+  </button>
+  <button class="nav-btn" onclick="goPage('tutorial', this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
+    Tutorial
+  </button>
+</nav>
+
+<script>
+// ==============================
+// STORAGE
+// ==============================
+const STORAGE_KEY = 'antropometrico_records';
+
+function loadRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch(e) { return []; }
+}
+
+function saveRecords(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+// ==============================
+// CALCULATIONS
+// ==============================
+
+// PEPP = ((PesoAnterior - PesoActual) / (PesoAnterior - PesoIdeal)) * 100
+// Since we don't always have ideal weight, we use simplified:
+// PEPP = ((pesoPrevio - pesoActual) / pesoPrevio) * 100
+// More standard: percent excess weight lost relative to first record
+function calcPEPP(records, currentIndex) {
+  if (currentIndex === 0 || records.length < 2) return null;
+  const prev = records[currentIndex - 1].peso;
+  const curr = records[currentIndex].peso;
+  if (!prev || !curr) return null;
+  return ((prev - curr) / prev) * 100;
+}
+
+// Simplified PEPP between any two weights
+function calcPEPPBetween(prevPeso, currPeso) {
+  if (!prevPeso || !currPeso) return null;
+  return ((prevPeso - currPeso) / prevPeso) * 100;
+}
+
+// Status
+const RANGES = {
+  perimetro: { opt: [0, 94], label: 'Perímetro Abdominal', unit: 'cm', higherBad: true },
+  grasa: { opt: [13, 24], label: 'Masa Grasa', unit: '%', higherBad: true },
+  muscular: { opt: [32.9, 38.9], label: 'Masa Muscular', unit: '%', higherBad: false },
+  visceral: { opt: [0, 9], label: 'Grasa Visceral', unit: '', higherBad: true },
+  bmi: { opt: [18.5, 24.9], label: 'BMI', unit: 'kg/m²', higherBad: true },
+};
+
+function getStatus(key, val) {
+  const r = RANGES[key];
+  if (!r || val === null || val === undefined || val === '') return 'unknown';
+  const v = parseFloat(val);
+  if (v >= r.opt[0] && v <= r.opt[1]) return 'ok';
+  if (r.higherBad && v > r.opt[1]) return 'bad';
+  if (!r.higherBad && v < r.opt[0]) return 'bad';
+  if (r.higherBad && v > r.opt[1] * 1.1) return 'bad';
+  return 'warn';
+}
+
+function statusLabel(s) {
+  if (s === 'ok') return ['pill-ok', '✓ Óptimo'];
+  if (s === 'warn') return ['pill-warn', '⚠ Atención'];
+  if (s === 'bad') return ['pill-bad', '✗ Fuera de rango'];
+  return ['', '—'];
+}
+
+// ==============================
+// NAVIGATION
+// ==============================
+function goPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'historial') renderHistorial();
+  if (name === 'registro') setupForm();
+}
+
+// ==============================
+// FORM
+// ==============================
+function setupForm() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('inp-fecha').value = today;
+  
+  // Update PEPP preview when peso changes
+  document.getElementById('inp-peso').addEventListener('input', updatePEPPPreview);
+}
+
+function updatePEPPPreview() {
+  const records = loadRecords();
+  const pesoInput = parseFloat(document.getElementById('inp-peso').value);
+  const preview = document.getElementById('pepp-preview');
+  
+  if (!pesoInput || records.length === 0) {
+    preview.innerHTML = records.length === 0 
+      ? '<span style="font-size:13px;color:var(--muted)">Primer registro — PEPP se calculará desde el próximo control</span>'
+      : '';
+    return;
+  }
+  
+  const lastPeso = records[records.length - 1].peso;
+  const pepp = calcPEPPBetween(lastPeso, pesoInput);
+  
+  if (pepp === null) return;
+  
+  const color = pepp > 0 ? 'var(--good)' : pepp < 0 ? 'var(--bad)' : 'var(--muted)';
+  const arrow = pepp > 0 ? '↓' : pepp < 0 ? '↑' : '→';
+  const label = pepp > 0 ? 'perdido respecto al control anterior' : pepp < 0 ? 'ganado respecto al control anterior' : 'sin cambio';
+  
+  preview.innerHTML = `<span style="color:${color}">${arrow} ${Math.abs(pepp).toFixed(1)}% ${label}</span>`;
+}
+
+function saveRecord() {
+  const fecha = document.getElementById('inp-fecha').value;
+  const peso = parseFloat(document.getElementById('inp-peso').value);
+  
+  if (!fecha || !peso) {
+    showToast('⚠️ Fecha y peso son obligatorios');
+    return;
+  }
+  
+  const records = loadRecords();
+  
+  const record = {
+    id: Date.now(),
+    fecha,
+    peso,
+    perimetro: parseFloat(document.getElementById('inp-perimetro').value) || null,
+    bmi: parseFloat(document.getElementById('inp-bmi').value) || null,
+    grasa: parseFloat(document.getElementById('inp-grasa').value) || null,
+    muscular: parseFloat(document.getElementById('inp-muscular').value) || null,
+    visceral: parseFloat(document.getElementById('inp-visceral').value) || null,
+    rm: parseFloat(document.getElementById('inp-rm').value) || null,
+  };
+  
+  // Calculate PEPP
+  if (records.length > 0) {
+    const lastPeso = records[records.length - 1].peso;
+    record.pepp = calcPEPPBetween(lastPeso, peso);
+  } else {
+    record.pepp = null;
+  }
+  
+  records.push(record);
+  // Sort by date
+  records.sort((a, b) => a.fecha.localeCompare(b.fecha));
+  saveRecords(records);
+  
+  // Recalculate all PEPPs
+  recalcAllPEPP();
+  
+  showToast('✓ Registro guardado');
+  
+  // Clear form
+  ['inp-peso','inp-perimetro','inp-bmi','inp-grasa','inp-muscular','inp-visceral','inp-rm']
+    .forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pepp-preview').innerHTML = '';
+  
+  setTimeout(() => goPage('dashboard', document.querySelector('.nav-btn')), 800);
+}
+
+function recalcAllPEPP() {
+  const records = loadRecords();
+  for (let i = 0; i < records.length; i++) {
+    if (i === 0) {
+      records[i].pepp = null;
+    } else {
+      records[i].pepp = calcPEPPBetween(records[i-1].peso, records[i].peso);
+    }
+  }
+  saveRecords(records);
+}
+
+function deleteRecord(id) {
+  if (!confirm('¿Eliminar este registro?')) return;
+  let records = loadRecords().filter(r => r.id !== id);
+  saveRecords(records);
+  recalcAllPEPP();
+  renderHistorial();
+  showToast('Registro eliminado');
+}
+
+// ==============================
+// DASHBOARD
+// ==============================
+let mainChartInstance = null;
+let currentChartType = 'weight';
+let deltaChartInstance = null;
+let currentDeltaType = 'peso';
+let radarChartInstance = null;
+
+function renderDashboard() {
+  const records = loadRecords();
+  
+  if (records.length === 0) {
+    document.getElementById('pepp-section').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <div class="empty-title">Sin registros aún</div>
+        <div class="empty-desc">Ve a "Registro" para ingresar<br>tu primer control antropométrico.</div>
+      </div>`;
+    document.getElementById('stats-grid').innerHTML = '';
+    document.getElementById('optimal-list').innerHTML = '';
+    return;
+  }
+  
+  const latest = records[records.length - 1];
+  const prev = records.length > 1 ? records[records.length - 2] : null;
+  
+  // PEPP section
+  renderPEPP(latest, prev);
+  
+  // Stats
+  renderStats(latest, prev);
+  
+  // Optimal
+  renderOptimal(latest);
+  
+  // Chart
+  renderChart(records, currentChartType);
+  renderDeltaChart(records, currentDeltaType);
+  renderRadarChart(records);
+}
+
+function renderPEPP(latest, prev) {
+  const section = document.getElementById('pepp-section');
+  
+  if (latest.pepp === null || latest.pepp === undefined) {
+    section.innerHTML = `
+      <div class="pepp-card" style="margin:0 16px 16px;">
+        <div class="pepp-icon">📋</div>
+        <div>
+          <div class="pepp-title">Primer registro</div>
+          <div class="pepp-value">—</div>
+          <div class="pepp-desc">Agrega un segundo control para ver el PEPP</div>
+        </div>
+      </div>`;
+    return;
+  }
+  
+  const pepp = latest.pepp;
+  const isLoss = pepp > 0;
+  const color = isLoss ? 'var(--good)' : 'var(--bad)';
+  const icon = isLoss ? '📉' : '📈';
+  const label = isLoss ? 'de pérdida de exceso de peso' : 'de ganancia de peso';
+  const diffKg = prev ? (prev.peso - latest.peso).toFixed(1) : '—';
+  const diffSign = prev ? (prev.peso > latest.peso ? '-' : '+') : '';
+  
+  section.innerHTML = `
+    <div class="pepp-card" style="margin:0 16px 16px; border-color:${color}40; background:linear-gradient(135deg, ${color}10 0%, transparent 100%);">
+      <div class="pepp-icon" style="border-color:${color}; background:${color}15;">${icon}</div>
+      <div>
+        <div class="pepp-title" style="color:${color}">PEPP — Último control</div>
+        <div class="pepp-value" style="color:${color}">${Math.abs(pepp).toFixed(1)}%</div>
+        <div class="pepp-desc">${label} ${diffSign !== '' ? `(${diffSign}${Math.abs(diffKg)} kg)` : ''}</div>
+      </div>
+    </div>`;
+}
+
+function renderStats(latest, prev) {
+  const grid = document.getElementById('stats-grid');
+  
+  function delta(curr, prev, higher_bad = true, unit = '') {
+    if (!prev || curr === null) return '';
+    const diff = curr - prev;
+    if (Math.abs(diff) < 0.01) return '<div class="stat-delta delta-neutral">→ Sin cambio</div>';
+    const good = higher_bad ? diff < 0 : diff > 0;
+    const cls = good ? 'delta-good' : 'delta-bad';
+    const arrow = diff < 0 ? '↓' : '↑';
+    return `<div class="stat-delta ${cls}">${arrow} ${Math.abs(diff).toFixed(1)}${unit}</div>`;
+  }
+  
+  const items = [
+    { label:'Peso', val: latest.peso, unit:'kg', delta: delta(latest.peso, prev?.peso, true, ' kg'), color: getStatus('bmi', latest.bmi) === 'ok' ? 'var(--good)' : 'var(--warn)' },
+    { label:'Per. Abdominal', val: latest.perimetro, unit:'cm', delta: delta(latest.perimetro, prev?.perimetro, true, ' cm'), color: getStatus('perimetro', latest.perimetro) === 'ok' ? 'var(--good)' : 'var(--bad)' },
+    { label:'Masa Grasa', val: latest.grasa, unit:'%', delta: delta(latest.grasa, prev?.grasa, true, '%'), color: getStatus('grasa', latest.grasa) === 'ok' ? 'var(--good)' : 'var(--bad)' },
+    { label:'Masa Muscular', val: latest.muscular, unit:'%', delta: delta(latest.muscular, prev?.muscular, false, '%'), color: getStatus('muscular', latest.muscular) === 'ok' ? 'var(--good)' : 'var(--warn)' },
+    { label:'Grasa Visceral', val: latest.visceral, unit:'', delta: delta(latest.visceral, prev?.visceral, true, ''), color: getStatus('visceral', latest.visceral) === 'ok' ? 'var(--good)' : 'var(--bad)' },
+    { label:'BMI', val: latest.bmi, unit:'kg/m²', delta: delta(latest.bmi, prev?.bmi, true, ''), color: getStatus('bmi', latest.bmi) === 'ok' ? 'var(--good)' : 'var(--warn)' },
+  ];
+  
+  grid.innerHTML = items.map(item => `
+    <div class="stat-card" style="--indicator-color:${item.color}">
+      <div class="stat-label">${item.label}</div>
+      <div class="stat-value">${item.val !== null && item.val !== undefined ? item.val : '—'}<span class="stat-unit">${item.unit}</span></div>
+      ${item.delta}
+    </div>
+  `).join('');
+}
+
+function renderOptimal(latest) {
+  const list = document.getElementById('optimal-list');
+  
+  const checks = [
+    { key: 'perimetro', val: latest.perimetro, range: '< 94 cm' },
+    { key: 'grasa', val: latest.grasa, range: '13–24%' },
+    { key: 'muscular', val: latest.muscular, range: '32.9–38.9%' },
+    { key: 'visceral', val: latest.visceral, range: '≤ 9' },
+    { key: 'bmi', val: latest.bmi, range: '18.5–24.9' },
+  ];
+  
+  list.innerHTML = checks.map(c => {
+    const s = getStatus(c.key, c.val);
+    const [cls, lbl] = statusLabel(s);
+    const r = RANGES[c.key];
+    return `
+      <div class="optimal-row">
+        <div>
+          <div class="optimal-name">${r.label}</div>
+          <div class="optimal-range">Óptimo: ${c.range} · Actual: ${c.val !== null && c.val !== undefined ? c.val + ' ' + r.unit : '—'}</div>
+        </div>
+        ${s !== 'unknown' ? `<span class="status-pill ${cls}">${lbl}</span>` : '<span style="color:var(--muted);font-size:12px">Sin dato</span>'}
+      </div>`;
+  }).join('');
+}
+
+function renderChart(records, type) {
+  const labels = records.map(r => {
+    const d = new Date(r.fecha + 'T12:00:00');
+    return d.toLocaleDateString('es-BO', { day:'2-digit', month:'short' });
+  });
+
+  const chartConfig = {
+    weight:   { field:'peso',      color:'#00d4aa', label:'Peso (kg)',        higherBad:true },
+    grasa:    { field:'grasa',     color:'#ff6b6b', label:'Masa Grasa (%)',   higherBad:true,  refLow:13,   refHigh:24   },
+    muscular: { field:'muscular',  color:'#ffd166', label:'Masa Muscular (%)',higherBad:false, refLow:32.9, refHigh:38.9 },
+    visceral: { field:'visceral',  color:'#a78bfa', label:'Grasa Visceral',   higherBad:true,  refHigh:9   },
+    bmi:      { field:'bmi',       color:'#38bdf8', label:'BMI (kg/m²)',      higherBad:true,  refLow:18.5, refHigh:24.9 },
+  };
+
+  const cfg = chartConfig[type] || chartConfig.weight;
+  const data = records.map(r => r[cfg.field]);
+  const color = cfg.color;
+
+  if (mainChartInstance) { mainChartInstance.destroy(); mainChartInstance = null; }
+
+  const ctx = document.getElementById('mainChart').getContext('2d');
+
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, 0, 0, 200);
+  grad.addColorStop(0, color + '40');
+  grad.addColorStop(1, color + '00');
+
+  const datasets = [{
+    label: cfg.label,
+    data,
+    borderColor: color,
+    backgroundColor: grad,
+    borderWidth: 2.5,
+    pointBackgroundColor: data.map((v, i) => {
+      if (i === 0 || data[i-1] === null) return color;
+      const decreased = data[i] < data[i-1];
+      return (cfg.higherBad ? decreased : !decreased) ? '#00d4aa' : '#ff6b6b';
+    }),
+    pointBorderColor: '#060d1a',
+    pointBorderWidth: 2,
+    pointRadius: 6,
+    pointHoverRadius: 8,
+    fill: true,
+    tension: 0.35,
+    spanGaps: true,
+  }];
+
+  // Reference band if available
+  if (cfg.refHigh !== undefined) {
+    const lo = cfg.refLow !== undefined ? cfg.refLow : Math.min(...data.filter(Boolean)) * 0.8;
+    datasets.push({
+      label: 'Zona óptima',
+      data: records.map(() => cfg.refHigh),
+      borderColor: 'rgba(255,255,255,0.12)',
+      borderWidth: 1,
+      borderDash: [4,4],
+      pointRadius: 0,
+      fill: cfg.refLow !== undefined ? '-1' : false,
+      backgroundColor: 'rgba(0,212,170,0.06)',
+      tension: 0,
+    });
+    if (cfg.refLow !== undefined) {
+      datasets.push({
+        label: 'Límite inferior',
+        data: records.map(() => cfg.refLow),
+        borderColor: 'rgba(255,255,255,0.08)',
+        borderWidth: 1,
+        borderDash: [4,4],
+        pointRadius: 0,
+        fill: false,
+        tension: 0,
+      });
+    }
+  }
+
+  mainChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1f35',
+          borderColor: color,
+          borderWidth: 1,
+          titleColor: '#e8f4f8',
+          bodyColor: '#6a8fa8',
+          filter: item => item.datasetIndex === 0,
+          callbacks: {
+            afterLabel: (tooltipItem) => {
+              const idx = tooltipItem.dataIndex;
+              const r = records[idx];
+              const lines = [];
+              if (type === 'weight' && r.pepp !== null && r.pepp !== undefined) {
+                lines.push(`PEPP: ${r.pepp > 0 ? '↓' : '↑'}${Math.abs(r.pepp).toFixed(1)}%`);
+              }
+              if (idx > 0 && data[idx] !== null && data[idx-1] !== null) {
+                const diff = (data[idx] - data[idx-1]).toFixed(1);
+                lines.push(`Cambio: ${diff > 0 ? '+' : ''}${diff}`);
+              }
+              return lines;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#6a8fa8', font:{ size:10 } } },
+        y: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#6a8fa8', font:{ size:10 } } }
+      },
+      interaction: { intersect:false, mode:'index' },
+    }
+  });
+
+  // Update tabs
+  document.querySelectorAll('#chart-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+  const tabMap = ['weight','grasa','muscular','visceral','bmi'];
+  document.querySelectorAll('#chart-tabs .tab-btn')[tabMap.indexOf(type)]?.classList.add('active');
+}
+
+function switchChart(type) {
+  currentChartType = type;
+  renderChart(loadRecords(), type);
+}
+
+// ==============================
+// DELTA BAR CHART
+// ==============================
+
+function renderDeltaChart(records, field) {
+  if (records.length < 2) {
+    if (deltaChartInstance) { deltaChartInstance.destroy(); deltaChartInstance = null; }
+    return;
+  }
+
+  // Build deltas: index 1..n  (skip first record — no previous)
+  const labels = [];
+  const deltas = [];
+  const colors = [];
+
+  const fieldMeta = {
+    peso:      { label:'Peso (kg)',        higherBad:true },
+    grasa:     { label:'Masa Grasa (%)',   higherBad:true },
+    muscular:  { label:'Masa Muscular (%)',higherBad:false },
+    visceral:  { label:'Grasa Visceral',   higherBad:true },
+    perimetro: { label:'Per. Abdominal (cm)',higherBad:true },
+  };
+  const meta = fieldMeta[field];
+
+  for (let i = 1; i < records.length; i++) {
+    const prev = records[i-1][field];
+    const curr = records[i][field];
+    if (prev === null || curr === null || prev === undefined || curr === undefined) continue;
+    const diff = parseFloat((curr - prev).toFixed(2));
+    const d1 = new Date(records[i].fecha + 'T12:00:00');
+    labels.push(d1.toLocaleDateString('es-BO', { day:'2-digit', month:'short' }));
+    deltas.push(diff);
+    // Good = going in the right direction
+    const isGood = meta.higherBad ? diff < 0 : diff > 0;
+    colors.push(isGood ? 'rgba(0,212,170,0.85)' : diff === 0 ? 'rgba(106,143,168,0.6)' : 'rgba(255,107,107,0.85)');
+  }
+
+  if (deltaChartInstance) { deltaChartInstance.destroy(); deltaChartInstance = null; }
+
+  const ctx = document.getElementById('deltaChart').getContext('2d');
+
+  deltaChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: meta.label,
+        data: deltas,
+        backgroundColor: colors,
+        borderColor: colors.map(c => c.replace('0.85','1').replace('0.6','0.9')),
+        borderWidth: 1.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1f35',
+          borderColor: 'rgba(0,212,170,0.3)',
+          borderWidth: 1,
+          titleColor: '#e8f4f8',
+          bodyColor: '#6a8fa8',
+          callbacks: {
+            label: (item) => {
+              const v = item.raw;
+              const sign = v > 0 ? '+' : '';
+              const dir = meta.higherBad
+                ? (v < 0 ? '↓ Mejoró' : v > 0 ? '↑ Empeoró' : '→ Igual')
+                : (v > 0 ? '↑ Mejoró' : v < 0 ? '↓ Empeoró' : '→ Igual');
+              return ` ${dir}  (${sign}${v})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color:'rgba(255,255,255,0.04)' },
+          ticks: { color:'#6a8fa8', font:{ size:10 } }
+        },
+        y: {
+          grid: { color:'rgba(255,255,255,0.05)', drawBorder:false },
+          ticks: { color:'#6a8fa8', font:{ size:10 } },
+          border: { dash:[4,4] },
+        }
+      },
+    }
+  });
+
+  // Update tabs
+  document.querySelectorAll('#delta-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+  const dMap = ['peso','grasa','muscular','visceral','perimetro'];
+  document.querySelectorAll('#delta-tabs .tab-btn')[dMap.indexOf(field)]?.classList.add('active');
+}
+
+function switchDelta(field) {
+  currentDeltaType = field;
+  renderDeltaChart(loadRecords(), field);
+}
+
+// ==============================
+// RADAR CHART
+// ==============================
+
+function renderRadarChart(records) {
+  if (records.length === 0) return;
+  const latest = records[records.length - 1];
+
+  // Normalize each parameter to 0-100 where 100 = perfectly in optimal range center
+  // For "higher is bad": score = 100 if at/below min optimal, 0 if at 2x max
+  // For "lower is bad": score = 100 if at/above max optimal, 0 if at half min
+  function score(val, low, high, higherBad) {
+    if (val === null || val === undefined) return 0;
+    const v = parseFloat(val);
+    const center = (low + high) / 2;
+    const range = high - low;
+    if (higherBad) {
+      // Perfect = at or below center; bad = far above high
+      if (v <= low) return 100;
+      if (v <= center) return 90;
+      if (v <= high) return 70;
+      const excess = (v - high) / (range || 1);
+      return Math.max(0, Math.round(70 - excess * 70));
+    } else {
+      if (v >= high) return 100;
+      if (v >= center) return 90;
+      if (v >= low) return 70;
+      const deficit = (low - v) / (range || 1);
+      return Math.max(0, Math.round(70 - deficit * 70));
+    }
+  }
+
+  const data = [
+    score(latest.perimetro, 70, 94,   true),   // Perímetro: lower=better
+    score(latest.grasa,     13,  24,  true),   // Grasa: within range
+    score(latest.muscular,  32.9,38.9,false),  // Músculo: higher=better
+    score(latest.visceral,  1,   9,   true),   // Visceral: lower=better
+    score(latest.bmi,       18.5,24.9,true),   // BMI: within range
+  ];
+
+  const axisLabels = ['Per. Abdominal','Masa Grasa','Masa Muscular','Grasa Visceral','BMI'];
+
+  if (radarChartInstance) { radarChartInstance.destroy(); radarChartInstance = null; }
+
+  const ctx = document.getElementById('radarChart').getContext('2d');
+
+  radarChartInstance = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: axisLabels,
+      datasets: [
+        {
+          label: 'Zona óptima',
+          data: [100,100,100,100,100],
+          borderColor: 'rgba(255,255,255,0.1)',
+          backgroundColor: 'rgba(0,212,170,0.05)',
+          borderWidth: 1,
+          pointRadius: 0,
+        },
+        {
+          label: 'Tu perfil',
+          data,
+          borderColor: '#00d4aa',
+          backgroundColor: 'rgba(0,212,170,0.18)',
+          borderWidth: 2.5,
+          pointBackgroundColor: data.map(v => v >= 70 ? '#00d4aa' : v >= 40 ? '#ffd166' : '#ff6b6b'),
+          pointBorderColor: '#060d1a',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0d1f35',
+          borderColor: 'rgba(0,212,170,0.3)',
+          borderWidth: 1,
+          titleColor: '#e8f4f8',
+          bodyColor: '#6a8fa8',
+          callbacks: {
+            label: (item) => {
+              if (item.datasetIndex === 0) return null;
+              const v = item.raw;
+              const status = v >= 70 ? '✓ Óptimo' : v >= 40 ? '⚠ Atención' : '✗ Fuera de rango';
+              return ` ${status} (score: ${v}/100)`;
+            }
+          }
+        }
+      },
+      scales: {
+        r: {
+          min: 0,
+          max: 100,
+          ticks: {
+            display: false,
+            stepSize: 25,
+          },
+          grid: { color: 'rgba(255,255,255,0.07)' },
+          angleLines: { color: 'rgba(255,255,255,0.07)' },
+          pointLabels: {
+            color: '#6a8fa8',
+            font: { size: 11, family: "'DM Sans', sans-serif", weight: '600' },
+          }
+        }
+      }
+    }
+  });
+}
+
+// ==============================
+// HISTORIAL
+// ==============================
+function renderHistorial() {
+  const records = loadRecords();
+  const container = document.getElementById('history-list');
+  
+  if (records.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <div class="empty-title">Sin registros</div>
+        <div class="empty-desc">Agrega tu primer control desde la sección Registro.</div>
+      </div>`;
+    return;
+  }
+  
+  // Newest first
+  const sorted = [...records].reverse();
+  
+  container.innerHTML = `<div class="card card-pad">` + sorted.map((r, i) => {
+    const date = new Date(r.fecha + 'T12:00:00').toLocaleDateString('es-BO', { day:'2-digit', month:'long', year:'numeric' });
+    const pepp = r.pepp;
+    let peppHtml = '<span style="color:var(--muted);font-size:12px">—</span>';
+    if (pepp !== null && pepp !== undefined) {
+      const c = pepp > 0 ? 'var(--good)' : 'var(--bad)';
+      const arrow = pepp > 0 ? '↓' : '↑';
+      peppHtml = `<span style="color:${c};font-size:14px;font-weight:700">${arrow} ${Math.abs(pepp).toFixed(1)}%</span>`;
+    }
+    
+    return `
+      <div class="history-item">
+        <div class="history-dot">${records.length - i}</div>
+        <div class="history-info">
+          <div class="history-date">${date}</div>
+          <div class="history-weight">
+            ${r.peso} kg
+            ${r.perimetro ? ` · ${r.perimetro} cm` : ''}
+            ${r.grasa ? ` · ${r.grasa}% grasa` : ''}
+            ${r.bmi ? ` · BMI ${r.bmi}` : ''}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div style="text-align:right">
+            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">PEPP</div>
+            ${peppHtml}
+          </div>
+          <button class="btn-del" onclick="deleteRecord(${r.id})">✕</button>
+        </div>
+      </div>`;
+  }).join('') + `</div>`;
+}
+
+// ==============================
+// EXPORT
+// ==============================
+function exportData() {
+  const records = loadRecords();
+  const json = JSON.stringify(records, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `control-antropometrico-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  showToast('Exportando datos...');
+}
+
+// ==============================
+// TOAST
+// ==============================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ==============================
+// INIT
+// ==============================
+// Seed sample data if empty (from the PDF)
+function seedSampleData() {
+  const records = loadRecords();
+  if (records.length === 0) {
+    const sample = [
+      { id: 1, fecha: '2026-01-21', peso: 88.7, perimetro: 109.0, grasa: 32.4, muscular: 29.8, visceral: 18, bmi: 31.8, rm: null, pepp: null },
+      { id: 2, fecha: '2026-02-11', peso: 87.3, perimetro: 107.0, grasa: 31.3, muscular: 30.4, visceral: 18, bmi: 31.3, rm: null, pepp: null },
+    ];
+    saveRecords(sample);
+    recalcAllPEPP();
+  }
+}
+
+// Service worker registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// Set today's date on form
+const todayStr = new Date().toISOString().split('T')[0];
+document.getElementById('inp-fecha').value = todayStr;
+
+seedSampleData();
+renderDashboard();
+</script>
+</body>
+</html>
