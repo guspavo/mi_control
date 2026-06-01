@@ -9,742 +9,236 @@
 <meta name="theme-color" content="#0a1628">
 <title>Control Antropométrico</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #060d1a;
-    --bg2: #0d1f35;
-    --bg3: #132840;
-    --accent: #00d4aa;
-    --accent2: #ff6b6b;
-    --accent3: #ffd166;
-    --text: #e8f4f8;
-    --muted: #6a8fa8;
-    --card: rgba(13,31,53,0.85);
-    --border: rgba(0,212,170,0.15);
-    --good: #00d4aa;
-    --bad: #ff6b6b;
-    --warn: #ffd166;
-    --radius: 18px;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+:root {
+  --bg:#060d1a; --bg2:#0d1f35; --bg3:#132840;
+  --accent:#00d4aa; --bad:#ff6b6b; --warn:#ffd166;
+  --text:#e8f4f8; --muted:#6a8fa8;
+  --card:rgba(13,31,53,0.9); --border:rgba(0,212,170,0.15);
+  --good:#00d4aa; --radius:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(0,212,170,.07) 0%,transparent 50%),radial-gradient(ellipse at 80% 80%,rgba(0,100,200,.07) 0%,transparent 50%);pointer-events:none;z-index:0}
 
-  /* Background mesh */
-  body::before {
-    content:'';
-    position:fixed;
-    inset:0;
-    background: 
-      radial-gradient(ellipse at 20% 20%, rgba(0,212,170,0.07) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(0,100,200,0.07) 0%, transparent 50%);
-    pointer-events:none;
-    z-index:0;
-  }
+/* NAV */
+nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,13,26,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:12px 4px 10px;background:none;border:none;color:var(--muted);font-size:10px;font-weight:500;cursor:pointer;transition:color .2s;gap:4px}
+.nav-btn svg{width:22px;height:22px}
+.nav-btn.active{color:var(--accent)}
 
-  /* NAV */
-  nav {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: rgba(6,13,26,0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .nav-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px 8px 10px;
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.2s;
-    gap: 4px;
-  }
-  .nav-btn.active { color: var(--accent); }
-  .nav-btn svg { width:22px; height:22px; }
+/* PAGES */
+.page{display:none;position:relative;z-index:1;padding:0 0 90px 0;min-height:100vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.page.active{display:block}
 
-  /* PAGES */
-  .page { 
-    display: none; 
-    position: relative; 
-    z-index: 1;
-    padding: 0 0 90px 0;
-    min-height: 100vh;
-  }
-  .page.active { display: block; }
+/* HEADER */
+.header{padding:56px 20px 20px;background:linear-gradient(180deg,rgba(0,212,170,.06) 0%,transparent 100%)}
+.header-sub{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.header h1{font-size:28px;font-weight:700;line-height:1.1;color:var(--text)}
 
-  /* HEADER */
-  .header {
-    padding: 56px 20px 20px;
-    background: linear-gradient(180deg, rgba(0,212,170,0.06) 0%, transparent 100%);
-  }
-  .header-sub {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 6px;
-  }
-  .header h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    line-height: 1.1;
-    color: var(--text);
-  }
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.card-pad{padding:18px}
+.section{padding:0 16px;margin-bottom:16px}
+.section-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px}
 
-  /* CARDS */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    overflow: hidden;
-  }
-  .card-pad { padding: 18px; }
-  .section { padding: 0 16px; margin-bottom: 16px; }
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px;margin-bottom:16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ic,var(--accent))}
+.stat-label{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.stat-value{font-size:26px;font-weight:700;color:var(--text);line-height:1}
+.stat-unit{font-size:12px;color:var(--muted);margin-left:2px}
+.stat-delta{margin-top:6px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:3px}
+.dg{color:var(--good)} .db{color:var(--bad)} .dn{color:var(--muted)}
 
-  /* STAT GRID */
-  .stat-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 0 16px;
-    margin-bottom: 16px;
-  }
-  .stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content:'';
-    position:absolute;
-    top:0; left:0; right:0;
-    height:2px;
-    background: var(--indicator-color, var(--accent));
-  }
-  .stat-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .stat-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 26px;
-    color: var(--text);
-    line-height: 1;
-  }
-  .stat-unit { font-size: 12px; color: var(--muted); margin-left: 2px; }
-  .stat-delta {
-    margin-top: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .stat-range {
-    font-size: 9px;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-  .delta-good { color: var(--good); }
-  .delta-bad { color: var(--bad); }
-  .delta-neutral { color: var(--muted); }
+/* PEPP CARD */
+.pepp-card{margin:0 16px 16px;background:linear-gradient(135deg,rgba(0,212,170,.12),rgba(0,100,200,.08));border:1px solid rgba(0,212,170,.3);border-radius:var(--radius);padding:20px;display:flex;align-items:center;gap:16px}
+.pepp-icon{width:54px;height:54px;border-radius:50%;background:rgba(0,212,170,.15);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.pepp-title{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.pepp-value{font-size:32px;font-weight:700;line-height:1}
+.pepp-desc{font-size:12px;color:var(--muted);margin-top:3px}
 
-  /* PEPP CARD */
-  .pepp-card {
-    margin: 0 16px 16px;
-    background: linear-gradient(135deg, rgba(0,212,170,0.12) 0%, rgba(0,100,200,0.08) 100%);
-    border: 1px solid rgba(0,212,170,0.3);
-    border-radius: var(--radius);
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .pepp-icon {
-    width: 54px; height: 54px;
-    border-radius: 50%;
-    background: rgba(0,212,170,0.15);
-    border: 2px solid var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-  .pepp-title {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-  .pepp-value {
-    font-family: 'DM Serif Display', serif;
-    font-size: 32px;
-    color: var(--text);
-    line-height: 1;
-  }
-  .pepp-desc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+/* CHART CARDS */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin:0 16px 16px}
+.chart-head{display:flex;justify-content:space-between;align-items:flex-start;padding:16px 16px 0}
+.chart-head-text .ct{font-size:14px;font-weight:700;color:var(--text)}
+.chart-head-text .cs{font-size:11px;color:var(--muted);margin-top:2px}
+.chart-close-btn{width:28px;height:28px;border-radius:50%;background:rgba(106,143,168,.15);border:1px solid rgba(106,143,168,.25);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.chart-close-btn.is-open{color:var(--muted)}
+.chart-close-btn.is-closed{background:rgba(0,212,170,.1);border-color:rgba(0,212,170,.3);color:var(--accent)}
+.chart-tabs-row{display:flex;gap:6px;padding:12px 16px 0;flex-wrap:wrap}
+.tab-btn{padding:6px 12px;border-radius:30px;font-size:11px;font-weight:600;border:1.5px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;font-family:inherit}
+.tab-btn.active{background:rgba(0,212,170,.12);border-color:var(--accent);color:var(--accent)}
 
-  /* CHART */
-  .chart-wrap {
-    padding: 18px;
-    position: relative;
-  }
-  .chart-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .chart-sub { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
-  canvas { max-width: 100%; }
+/* THE CHART WRAPPER — fixed pixel height, never collapses */
+.chart-body{overflow:hidden;transition:max-height .3s ease}
+.chart-body.open{max-height:320px}
+.chart-body.closed{max-height:0}
+.chart-canvas-wrap{padding:14px 16px 16px;height:230px;position:relative}
+.chart-canvas-wrap.radar-wrap{height:270px}
+.chart-canvas-wrap canvas{display:block;width:100%!important;height:100%!important}
 
-  /* HISTORY */
-  .history-item {
-    display: flex;
-    align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    gap: 14px;
-  }
-  .history-item:last-child { border-bottom: none; }
-  .history-dot {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: rgba(0,212,170,0.1);
-    border: 1.5px solid var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-  .history-info { flex: 1; }
-  .history-date { font-size: 13px; font-weight: 600; color: var(--text); }
-  .history-weight { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .history-pepp {
-    font-size: 13px;
-    font-weight: 700;
-    text-align: right;
-  }
-  .history-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .btn-del {
-    background: rgba(255,107,107,0.1);
-    border: 1px solid rgba(255,107,107,0.3);
-    border-radius: 8px;
-    color: var(--bad);
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .btn-edit {
-    background: rgba(0,212,170,0.1);
-    border: 1px solid rgba(0,212,170,0.3);
-    border-radius: 8px;
-    color: var(--accent);
-    padding: 6px 10px;
-    font-size: 12px;
-    cursor: pointer;
-  }
+/* OPTIMAL */
+.optimal-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.optimal-row:last-child{border-bottom:none}
+.optimal-name{font-size:13px;color:var(--text);font-weight:500}
+.optimal-range{font-size:11px;color:var(--muted);margin-top:2px}
+.pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.5px}
+.pill-ok{background:rgba(0,212,170,.15);color:var(--good)}
+.pill-warn{background:rgba(255,209,102,.15);color:var(--warn)}
+.pill-bad{background:rgba(255,107,107,.15);color:var(--bad)}
 
-  /* FORM */
-  .form-header {
-    padding: 56px 20px 20px;
-    background: linear-gradient(180deg, rgba(0,212,170,0.06) 0%, transparent 100%);
-  }
-  .form-body { padding: 0 16px 16px; }
-  .form-group { margin-bottom: 14px; }
-  label {
-    display: block;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 7px;
-  }
-  .label-hint { 
-    font-size: 10px; 
-    color: rgba(106,143,168,0.7);
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: 400;
-    margin-left: 6px;
-  }
-  input[type="date"],
-  input[type="text"] {
-    width: 100%;
-    background: var(--bg3);
-    border: 1.5px solid rgba(0,212,170,0.2);
-    border-radius: 12px;
-    padding: 14px 44px 14px 16px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    outline: none;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-  }
-  input:focus { border-color: var(--accent); }
-  input.inp-invalid { border-color: var(--bad) !important; }
-  input::placeholder { color: var(--muted); }
+/* FORM */
+.form-header{padding:56px 20px 20px;background:linear-gradient(180deg,rgba(0,212,170,.06) 0%,transparent 100%)}
+.form-body{padding:0 16px 16px}
+.form-group{margin-bottom:14px}
+label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.lh{font-size:10px;color:rgba(106,143,168,.7);text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px}
+.inp-wrap{position:relative;display:flex;align-items:center}
+.inp-wrap input{flex:1;background:var(--bg3);border:1.5px solid rgba(0,212,170,.2);border-radius:12px;padding:14px 44px 14px 16px;color:var(--text);font-family:inherit;font-size:16px;outline:none;transition:border-color .2s;-webkit-appearance:none;width:100%}
+.inp-wrap input:focus{border-color:var(--accent)}
+.inp-wrap input.invalid{border-color:var(--bad)!important}
+.inp-clear{position:absolute;right:12px;background:rgba(106,143,168,.15);border:none;border-radius:50%;width:24px;height:24px;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+input[type="date"]{background:var(--bg3);border:1.5px solid rgba(0,212,170,.2);border-radius:12px;padding:14px 16px;color:var(--text);font-family:inherit;font-size:16px;outline:none;width:100%;-webkit-appearance:none}
+input[type="date"]:focus{border-color:var(--accent)}
+.field-err{font-size:11px;color:var(--bad);margin-top:4px;min-height:14px;padding-left:4px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--accent),#00a882);border:none;border-radius:14px;padding:17px;color:#060d1a;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .2s}
+.btn-primary:active{opacity:.85}
+.btn-secondary{width:100%;background:transparent;border:1.5px solid rgba(106,143,168,.3);border-radius:14px;padding:14px;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px}
+.edit-banner{display:none;background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.3);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--warn)}
+.pepp-preview-box{background:rgba(0,212,170,.07);border:1px solid rgba(0,212,170,.2);border-radius:12px;padding:14px;margin-bottom:16px}
+.pepp-preview-label{font-size:11px;font-weight:700;letter-spacing:1px;color:var(--accent);margin-bottom:6px}
+.pepp-preview-desc{font-size:12px;color:var(--muted);line-height:1.5}
+#pepp-preview{margin-top:10px;font-size:22px;font-weight:700;color:var(--text)}
 
-  .inp-wrap {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  .inp-wrap input { flex: 1; }
-  .inp-clear {
-    position: absolute;
-    right: 12px;
-    background: rgba(106,143,168,0.15);
-    border: none;
-    border-radius: 50%;
-    width: 24px; height: 24px;
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, color 0.15s;
-    flex-shrink: 0;
-  }
-  .inp-clear:active { background: rgba(255,107,107,0.3); color: var(--bad); }
+/* HISTORY */
+.history-item{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05);gap:14px}
+.history-item:last-child{border-bottom:none}
+.history-dot{width:36px;height:36px;border-radius:50%;background:rgba(0,212,170,.1);border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0}
+.history-info{flex:1}
+.history-date{font-size:13px;font-weight:600;color:var(--text)}
+.history-detail{font-size:11px;color:var(--muted);margin-top:2px}
+.history-actions{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.pepp-label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+.btn-row{display:flex;gap:6px}
+.btn-edit{background:rgba(0,212,170,.1);border:1px solid rgba(0,212,170,.3);border-radius:8px;color:var(--accent);padding:6px 10px;font-size:12px;cursor:pointer}
+.btn-del{background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);border-radius:8px;color:var(--bad);padding:6px 10px;font-size:12px;cursor:pointer}
 
-  .inp-error {
-    font-size: 11px;
-    color: var(--bad);
-    margin-top: 4px;
-    min-height: 14px;
-    padding-left: 4px;
-  }
+/* TUTORIAL */
+.tut-step{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.tut-step:last-child{border-bottom:none}
+.tut-num{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#00a882);color:#060d1a;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.tut-content h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.tut-content p{font-size:12px;color:var(--muted);line-height:1.6}
+.tut-chip{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:12px;color:var(--accent);margin-top:8px;display:inline-flex;align-items:center;gap:6px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--muted)}
 
-  .btn-secondary {
-    width: 100%;
-    background: transparent;
-    border: 1.5px solid rgba(106,143,168,0.3);
-    border-radius: 14px;
-    padding: 14px;
-    color: var(--muted);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: border-color 0.2s, color 0.2s;
-  }
-  .btn-secondary:active { border-color: var(--bad); color: var(--bad); }
-  
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
+/* EMPTY / TOAST */
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:14px;opacity:.5}
+.empty-title{font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px}
+.empty-desc{font-size:13px;line-height:1.5}
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--accent);color:#060d1a;padding:12px 24px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;transition:all .3s;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  .btn-primary {
-    width: 100%;
-    background: linear-gradient(135deg, var(--accent), #00a882);
-    border: none;
-    border-radius: 14px;
-    padding: 17px;
-    color: #060d1a;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: 0.3px;
-    transition: opacity 0.2s, transform 0.1s;
-    margin-top: 8px;
-  }
-  .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
-
-  /* OPTIMAL INDICATORS */
-  .optimal-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-  .optimal-row:last-child { border-bottom: none; }
-  .optimal-name { font-size: 13px; color: var(--text); font-weight: 500; }
-  .optimal-range { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .status-pill {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-  .pill-ok { background: rgba(0,212,170,0.15); color: var(--good); }
-  .pill-warn { background: rgba(255,209,102,0.15); color: var(--warn); }
-  .pill-bad { background: rgba(255,107,107,0.15); color: var(--bad); }
-
-  /* EMPTY STATE */
-  .empty-state {
-    text-align: center;
-    padding: 50px 20px;
-    color: var(--muted);
-  }
-  .empty-icon { font-size: 48px; margin-bottom: 14px; opacity: 0.5; }
-  .empty-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-  .empty-desc { font-size: 13px; line-height: 1.5; }
-
-  /* TUTORIAL */
-  .tut-step {
-    display: flex;
-    gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-  }
-  .tut-step:last-child { border-bottom: none; }
-  .tut-num {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), #00a882);
-    color: #060d1a;
-    font-weight: 800;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .tut-content h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .tut-content p { font-size: 12px; color: var(--muted); line-height: 1.6; }
-  .tut-img {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 12px;
-    color: var(--accent);
-    margin-top: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: var(--accent);
-    color: #060d1a;
-    padding: 12px 24px;
-    border-radius: 30px;
-    font-size: 13px;
-    font-weight: 700;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 999;
-    white-space: nowrap;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    align-items: flex-end;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--bg2);
-    border-radius: 24px 24px 0 0;
-    padding: 24px 20px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom));
-    width: 100%;
-    border-top: 1px solid var(--border);
-  }
-  .modal-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 20px;
-    margin-bottom: 4px;
-  }
-  .modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
-
-  /* ANIMATIONS */
-  @keyframes fadeUp {
-    from { opacity:0; transform:translateY(16px); }
-    to { opacity:1; transform:translateY(0); }
-  }
-  .page.active .card,
-  .page.active .stat-card,
-  .page.active .pepp-card {
-    animation: fadeUp 0.4s ease both;
-  }
-
-  .section-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.3px;
-    margin-bottom: 12px;
-    padding-top: 4px;
-  }
-
-  /* scroll behavior */
-  .page { 
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Tab indicator dots */
-  .tabs {
-    display: flex;
-    gap: 8px;
-    padding: 0 16px;
-    margin-bottom: 16px;
-  }
-  .tab-btn {
-    padding: 7px 14px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 600;
-    border: 1.5px solid var(--border);
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .tab-btn.active {
-    background: rgba(0,212,170,0.12);
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .chart-tabs { display: none; }
-  .chart-tabs.active { display: block; }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 13px;
-  }
-  .info-row:last-child { border-bottom: none; }
-  .info-label { color: var(--muted); }
-  .info-val { font-weight: 600; }
-
-  /* CHART FIXED CONTAINERS */
-  .chart-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 14px;
-    gap: 10px;
-  }
-  .chart-toggle-btn {
-    flex-shrink: 0;
-    width: 30px; height: 30px;
-    border-radius: 50%;
-    background: rgba(106,143,168,0.15);
-    border: 1px solid rgba(106,143,168,0.25);
-    color: var(--muted);
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
-    margin-top: 2px;
-  }
-  .chart-toggle-btn:active { background: rgba(0,212,170,0.2); color: var(--accent); }
-  .chart-toggle-btn.closed {
-    background: rgba(0,212,170,0.1);
-    border-color: rgba(0,212,170,0.3);
-    color: var(--accent);
-    font-size: 14px;
-  }
-
-  .canvas-box {
-    position: relative;
-    width: 100%;
-    height: 220px;
-  }
-  .canvas-box-radar {
-    height: 280px;
-  }
-  .canvas-box canvas {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100% !important;
-    height: 100% !important;
-  }
-
-  .chart-body-collapsed {
-    display: none;
-  }
-
-  /* DELTA CHART POSITIVE/NEGATIVE ANNOTATION */
-  .delta-axis-zero {
-    border-top: 1px dashed rgba(255,255,255,0.15);
-  }
+/* RADAR legend */
+.radar-legend{display:flex;gap:16px;justify-content:center;padding:0 16px 14px;flex-wrap:wrap}
+.radar-legend span{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.radar-legend i{width:12px;height:3px;border-radius:2px;display:inline-block}
 </style>
 </head>
 <body>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- PAGE: DASHBOARD -->
+<!-- ===== DASHBOARD ===== -->
 <div class="page active" id="page-dashboard">
   <div class="header">
     <div class="header-sub">Panel Principal</div>
     <h1>Mi Control<br>Antropométrico</h1>
   </div>
-
-  <!-- Latest PEPP -->
   <div id="pepp-section"></div>
-
-  <!-- Stats grid -->
   <div class="stat-grid" id="stats-grid"></div>
-
-  <!-- Status indicators -->
   <div class="section">
-    <div class="card">
-      <div class="card-pad">
-        <div class="section-title">Estado de Parámetros</div>
-        <div id="optimal-list"></div>
+    <div class="card card-pad">
+      <div class="section-title">Estado de Parámetros</div>
+      <div id="optimal-list"></div>
+    </div>
+  </div>
+
+  <!-- CHART 1: Evolución -->
+  <div class="chart-card" id="cc-evolucion">
+    <div class="chart-head">
+      <div class="chart-head-text">
+        <div class="ct">📈 Evolución del Parámetro</div>
+        <div class="cs">Toca un punto para ver detalle</div>
+      </div>
+      <button class="chart-close-btn is-open" id="cbtn-evolucion" onclick="toggleChart('evolucion')">✕</button>
+    </div>
+    <div class="chart-tabs-row">
+      <button class="tab-btn active" onclick="switchChart('weight',this)">Peso</button>
+      <button class="tab-btn" onclick="switchChart('grasa',this)">Grasa</button>
+      <button class="tab-btn" onclick="switchChart('muscular',this)">Músculo</button>
+      <button class="tab-btn" onclick="switchChart('visceral',this)">Visceral</button>
+      <button class="tab-btn" onclick="switchChart('bmi',this)">BMI</button>
+    </div>
+    <div class="chart-body open" id="cb-evolucion">
+      <div class="chart-canvas-wrap">
+        <canvas id="mainChart"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- Chart section: Evolución -->
-  <div class="section" id="section-evolucion">
-    <div class="card">
-      <div class="chart-wrap">
-        <div class="chart-header-row">
-          <div>
-            <div class="chart-title">📈 Evolución del Parámetro</div>
-            <div class="chart-sub">Tendencia histórica — toca un punto para detalles</div>
-          </div>
-          <button class="chart-toggle-btn" id="toggle-evolucion" onclick="toggleChart('evolucion')" title="Cerrar gráfica">✕</button>
-        </div>
-        <div id="body-evolucion">
-          <div class="tabs" id="chart-tabs">
-            <button class="tab-btn active" onclick="switchChart('weight')">Peso</button>
-            <button class="tab-btn" onclick="switchChart('grasa')">Grasa</button>
-            <button class="tab-btn" onclick="switchChart('muscular')">Músculo</button>
-            <button class="tab-btn" onclick="switchChart('visceral')">Visceral</button>
-            <button class="tab-btn" onclick="switchChart('bmi')">BMI</button>
-          </div>
-          <div class="canvas-box">
-            <canvas id="mainChart"></canvas>
-          </div>
-        </div>
+  <!-- CHART 2: Cambios -->
+  <div class="chart-card" id="cc-cambios">
+    <div class="chart-head">
+      <div class="chart-head-text">
+        <div class="ct">📊 Cambio entre Controles</div>
+        <div class="cs">Verde = mejoró · Rojo = empeoró</div>
+      </div>
+      <button class="chart-close-btn is-open" id="cbtn-cambios" onclick="toggleChart('cambios')">✕</button>
+    </div>
+    <div class="chart-tabs-row">
+      <button class="tab-btn active" onclick="switchDelta('peso',this)">Peso</button>
+      <button class="tab-btn" onclick="switchDelta('grasa',this)">Grasa</button>
+      <button class="tab-btn" onclick="switchDelta('muscular',this)">Músculo</button>
+      <button class="tab-btn" onclick="switchDelta('visceral',this)">Visceral</button>
+      <button class="tab-btn" onclick="switchDelta('perimetro',this)">Perím.</button>
+    </div>
+    <div class="chart-body open" id="cb-cambios">
+      <div class="chart-canvas-wrap">
+        <canvas id="deltaChart"></canvas>
       </div>
     </div>
   </div>
 
-  <!-- Chart: Cambio entre controles (barras sube/baja) -->
-  <div class="section" id="section-cambios">
-    <div class="card">
-      <div class="chart-wrap">
-        <div class="chart-header-row">
-          <div>
-            <div class="chart-title">📊 Cambio entre Controles</div>
-            <div class="chart-sub">Verde = mejoró · Rojo = empeoró · por control</div>
-          </div>
-          <button class="chart-toggle-btn" id="toggle-cambios" onclick="toggleChart('cambios')" title="Cerrar gráfica">✕</button>
-        </div>
-        <div id="body-cambios">
-          <div class="tabs" id="delta-tabs">
-            <button class="tab-btn active" onclick="switchDelta('peso')">Peso</button>
-            <button class="tab-btn" onclick="switchDelta('grasa')">Grasa</button>
-            <button class="tab-btn" onclick="switchDelta('muscular')">Músculo</button>
-            <button class="tab-btn" onclick="switchDelta('visceral')">Visceral</button>
-            <button class="tab-btn" onclick="switchDelta('perimetro')">Perím.</button>
-          </div>
-          <div class="canvas-box">
-            <canvas id="deltaChart"></canvas>
-          </div>
-        </div>
+  <!-- CHART 3: Radar -->
+  <div class="chart-card" style="margin-bottom:24px" id="cc-radar">
+    <div class="chart-head">
+      <div class="chart-head-text">
+        <div class="ct">🎯 Perfil vs Valores Óptimos</div>
+        <div class="cs">Último control vs rangos ideales</div>
       </div>
+      <button class="chart-close-btn is-open" id="cbtn-radar" onclick="toggleChart('radar')">✕</button>
     </div>
-  </div>
-
-  <!-- Chart: Radar vs rangos óptimos -->
-  <div class="section" style="margin-bottom:24px;" id="section-radar">
-    <div class="card">
-      <div class="chart-wrap">
-        <div class="chart-header-row">
-          <div>
-            <div class="chart-title">🎯 Perfil vs Valores Óptimos</div>
-            <div class="chart-sub">Qué tan cerca estás del rango ideal</div>
-          </div>
-          <button class="chart-toggle-btn" id="toggle-radar" onclick="toggleChart('radar')" title="Cerrar gráfica">✕</button>
-        </div>
-        <div id="body-radar">
-          <div class="canvas-box canvas-box-radar">
-            <canvas id="radarChart"></canvas>
-          </div>
-          <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-              <div style="width:12px;height:3px;background:#00d4aa;border-radius:2px"></div> Tu perfil
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-              <div style="width:12px;height:3px;background:rgba(255,255,255,0.2);border-radius:2px"></div> Zona óptima
-            </div>
-          </div>
-        </div>
+    <div class="chart-body open" id="cb-radar">
+      <div class="chart-canvas-wrap radar-wrap">
+        <canvas id="radarChart"></canvas>
+      </div>
+      <div class="radar-legend">
+        <span><i style="background:#00d4aa"></i>Tu perfil</span>
+        <span><i style="background:rgba(255,255,255,.2)"></i>Zona óptima</span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- PAGE: REGISTRO -->
+<!-- ===== REGISTRO ===== -->
 <div class="page" id="page-registro">
   <div class="form-header">
     <div class="header-sub">Nuevo Registro</div>
@@ -752,102 +246,88 @@
   </div>
   <div class="form-body">
     <div class="card card-pad">
-
-      <!-- Aviso de edición de registro -->
-      <div id="edit-banner" style="display:none; background:rgba(255,209,102,0.1); border:1px solid rgba(255,209,102,0.3); border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:12px; color:var(--warn);">
+      <div class="edit-banner" id="edit-banner">
         ✏️ <strong>Modo edición</strong> — Estás corrigiendo un registro existente.
-        <span style="float:right; cursor:pointer; color:var(--muted);" onclick="cancelEdit()">✕ Cancelar</span>
+        <span style="float:right;cursor:pointer;color:var(--muted)" onclick="cancelEdit()">✕ Cancelar</span>
       </div>
-
       <div class="form-group">
         <label>Fecha del control</label>
-        <div class="inp-wrap">
-          <input type="date" id="inp-fecha">
-          <button class="inp-clear" onclick="clearField('inp-fecha')" title="Borrar">✕</button>
-        </div>
+        <input type="date" id="inp-fecha">
       </div>
-
       <div class="form-group">
-        <label>Peso Corporal <span class="label-hint">kg — usa , o .</span></label>
+        <label>Peso Corporal <span class="lh">kg — usa , o .</span></label>
         <div class="inp-wrap">
-          <input type="text" inputmode="decimal" id="inp-peso" placeholder="ej. 87.3 o 87,3" autocomplete="off">
-          <button class="inp-clear" onclick="clearField('inp-peso')" title="Borrar">✕</button>
+          <input type="text" inputmode="decimal" id="inp-peso" placeholder="ej. 87,3" autocomplete="off">
+          <button class="inp-clear" onclick="clearField('inp-peso')">✕</button>
         </div>
-        <div class="inp-error" id="err-peso"></div>
+        <div class="field-err" id="err-peso"></div>
       </div>
-
       <div class="form-grid">
         <div class="form-group">
-          <label>Per. Abdominal <span class="label-hint">cm</span></label>
+          <label>Per. Abdominal <span class="lh">cm</span></label>
           <div class="inp-wrap">
             <input type="text" inputmode="decimal" id="inp-perimetro" placeholder="ej. 107" autocomplete="off">
-            <button class="inp-clear" onclick="clearField('inp-perimetro')" title="Borrar">✕</button>
+            <button class="inp-clear" onclick="clearField('inp-perimetro')">✕</button>
           </div>
-          <div class="inp-error" id="err-perimetro"></div>
+          <div class="field-err" id="err-perimetro"></div>
         </div>
         <div class="form-group">
-          <label>BMI <span class="label-hint">kg/m²</span></label>
+          <label>BMI <span class="lh">kg/m²</span></label>
           <div class="inp-wrap">
-            <input type="text" inputmode="decimal" id="inp-bmi" placeholder="ej. 31.3" autocomplete="off">
-            <button class="inp-clear" onclick="clearField('inp-bmi')" title="Borrar">✕</button>
+            <input type="text" inputmode="decimal" id="inp-bmi" placeholder="ej. 31,3" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-bmi')">✕</button>
           </div>
-          <div class="inp-error" id="err-bmi"></div>
+          <div class="field-err" id="err-bmi"></div>
         </div>
       </div>
-
       <div class="form-grid">
         <div class="form-group">
-          <label>Masa Grasa <span class="label-hint">%</span></label>
+          <label>Masa Grasa <span class="lh">%</span></label>
           <div class="inp-wrap">
             <input type="text" inputmode="decimal" id="inp-grasa" placeholder="ej. 31,3" autocomplete="off">
-            <button class="inp-clear" onclick="clearField('inp-grasa')" title="Borrar">✕</button>
+            <button class="inp-clear" onclick="clearField('inp-grasa')">✕</button>
           </div>
-          <div class="inp-error" id="err-grasa"></div>
+          <div class="field-err" id="err-grasa"></div>
         </div>
         <div class="form-group">
-          <label>Masa Muscular <span class="label-hint">%</span></label>
+          <label>Masa Muscular <span class="lh">%</span></label>
           <div class="inp-wrap">
             <input type="text" inputmode="decimal" id="inp-muscular" placeholder="ej. 30,4" autocomplete="off">
-            <button class="inp-clear" onclick="clearField('inp-muscular')" title="Borrar">✕</button>
+            <button class="inp-clear" onclick="clearField('inp-muscular')">✕</button>
           </div>
-          <div class="inp-error" id="err-muscular"></div>
+          <div class="field-err" id="err-muscular"></div>
         </div>
       </div>
-
       <div class="form-grid">
         <div class="form-group">
-          <label>Grasa Visceral <span class="label-hint">nivel</span></label>
+          <label>Grasa Visceral <span class="lh">nivel</span></label>
           <div class="inp-wrap">
             <input type="text" inputmode="decimal" id="inp-visceral" placeholder="ej. 18" autocomplete="off">
-            <button class="inp-clear" onclick="clearField('inp-visceral')" title="Borrar">✕</button>
+            <button class="inp-clear" onclick="clearField('inp-visceral')">✕</button>
           </div>
-          <div class="inp-error" id="err-visceral"></div>
+          <div class="field-err" id="err-visceral"></div>
         </div>
         <div class="form-group">
-          <label>RM <span class="label-hint">opcional</span></label>
+          <label>RM <span class="lh">opcional</span></label>
           <div class="inp-wrap">
-            <input type="text" inputmode="decimal" id="inp-rm" placeholder="ej. 94.0" autocomplete="off">
-            <button class="inp-clear" onclick="clearField('inp-rm')" title="Borrar">✕</button>
+            <input type="text" inputmode="decimal" id="inp-rm" placeholder="ej. 94,0" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-rm')">✕</button>
           </div>
-          <div class="inp-error" id="err-rm"></div>
+          <div class="field-err" id="err-rm"></div>
         </div>
       </div>
-
-      <div style="background:rgba(0,212,170,0.07); border:1px solid rgba(0,212,170,0.2); border-radius:12px; padding:14px; margin-bottom:16px;">
-        <div style="font-size:11px; font-weight:700; letter-spacing:1px; color:var(--accent); margin-bottom:6px;">PEPP CALCULADO AUTOMÁTICAMENTE</div>
-        <div style="font-size:12px; color:var(--muted); line-height:1.5;">
-          El <strong style="color:var(--text);">% de Exceso de Peso Perdido (PEPP)</strong> se calcula automáticamente comparando el peso ingresado con el registro anterior.
-        </div>
-        <div id="pepp-preview" style="margin-top:10px; font-family:'DM Serif Display',serif; font-size:22px; color:var(--text);"></div>
+      <div class="pepp-preview-box">
+        <div class="pepp-preview-label">PEPP — CALCULADO AUTOMÁTICAMENTE</div>
+        <div class="pepp-preview-desc">El <strong style="color:var(--text)">% Exceso de Peso Perdido</strong> se calcula comparando con el registro anterior.</div>
+        <div id="pepp-preview"></div>
       </div>
-
       <button class="btn-primary" id="btn-save" onclick="saveRecord()">Guardar Registro</button>
-      <button class="btn-secondary" id="btn-clear-all" onclick="clearAllFields()" type="button">🗑 Limpiar todo el formulario</button>
+      <button class="btn-secondary" onclick="clearAllFields()">🗑 Limpiar formulario</button>
     </div>
   </div>
 </div>
 
-<!-- PAGE: HISTORIAL -->
+<!-- ===== HISTORIAL ===== -->
 <div class="page" id="page-historial">
   <div class="header">
     <div class="header-sub">Todos los registros</div>
@@ -858,1110 +338,626 @@
   </div>
 </div>
 
-<!-- PAGE: TUTORIAL -->
+<!-- ===== TUTORIAL ===== -->
 <div class="page" id="page-tutorial">
   <div class="header">
     <div class="header-sub">Guía de uso</div>
     <h1>Tutorial<br>de la App</h1>
   </div>
   <div class="section">
-
-    <!-- Instalación iPhone -->
-    <div class="card card-pad" style="margin-bottom:16px;">
-      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">📱 Instalar en iPhone</div>
-      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Convierte esta app en una app nativa sin ir al App Store</div>
-
-      <div class="tut-step">
-        <div class="tut-num">1</div>
-        <div class="tut-content">
-          <h4>Abre en Safari</h4>
-          <p>Esta app DEBE abrirse en Safari de iPhone. No funciona como app instalable desde Chrome o Firefox en iOS.</p>
-          <div class="tut-img">
-            🧭 <span>Copiar la URL y pegar en Safari</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="tut-step">
-        <div class="tut-num">2</div>
-        <div class="tut-content">
-          <h4>Toca el botón Compartir</h4>
-          <p>En la barra inferior de Safari, toca el ícono de compartir — es un cuadrado con una flecha apuntando hacia arriba <strong style="color:var(--accent)">⬆️</strong>.</p>
-        </div>
-      </div>
-
-      <div class="tut-step">
-        <div class="tut-num">3</div>
-        <div class="tut-content">
-          <h4>Selecciona "Añadir a pantalla de inicio"</h4>
-          <p>Desliza hacia abajo en el menú de compartir hasta encontrar la opción <strong style="color:var(--accent)">"Añadir a pantalla de inicio"</strong> y tócala.</p>
-          <div class="tut-img">
-            ➕ <span>Añadir a pantalla de inicio</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="tut-step">
-        <div class="tut-num">4</div>
-        <div class="tut-content">
-          <h4>Confirmar el nombre</h4>
-          <p>Aparecerá una pantalla con el nombre "Mi Control". Toca <strong style="color:var(--accent)">"Añadir"</strong> en la esquina superior derecha.</p>
-        </div>
-      </div>
-
-      <div class="tut-step">
-        <div class="tut-num">5</div>
-        <div class="tut-content">
-          <h4>¡Listo! Abre desde el inicio</h4>
-          <p>El ícono de la app aparecerá en tu pantalla de inicio de iPhone. Al abrirla desde ahí, se verá en pantalla completa como una app nativa.</p>
-          <div class="tut-img">
-            ✅ <span>La app funciona sin conexión a internet</span>
-          </div>
-        </div>
-      </div>
+    <div class="card card-pad" style="margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">📱 Instalar en iPhone</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Convierte esta app en una app nativa sin App Store</div>
+      <div class="tut-step"><div class="tut-num">1</div><div class="tut-content"><h4>Abre en Safari</h4><p>Debe ser Safari de iPhone — Chrome y Firefox no soportan instalación de PWAs en iOS.</p></div></div>
+      <div class="tut-step"><div class="tut-num">2</div><div class="tut-content"><h4>Toca el botón Compartir ⬆️</h4><p>En la barra inferior de Safari, toca el cuadrado con flecha hacia arriba.</p></div></div>
+      <div class="tut-step"><div class="tut-num">3</div><div class="tut-content"><h4>Añadir a pantalla de inicio</h4><p>Desliza el menú y toca <strong style="color:var(--accent)">"Añadir a pantalla de inicio"</strong> → toca Añadir.</p></div></div>
+      <div class="tut-step"><div class="tut-num">4</div><div class="tut-content"><h4>¡Listo!</h4><p>El ícono aparece en tu pantalla de inicio. Ábrela desde ahí para pantalla completa.</p><div class="tut-chip">✅ Funciona sin internet</div></div></div>
     </div>
-
-    <!-- Cómo usar -->
-    <div class="card card-pad" style="margin-bottom:16px;">
-      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">🏋️ Cómo usar la App</div>
-      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Guía para registrar y entender tus datos</div>
-
-      <div class="tut-step">
-        <div class="tut-num">1</div>
-        <div class="tut-content">
-          <h4>Registrar tu primer control</h4>
-          <p>Toca el ícono ✏️ de la barra inferior para ir a "Registro". Ingresa todos los datos de tu control nutricional. La fecha se llena automáticamente con hoy.</p>
-        </div>
-      </div>
-
-      <div class="tut-step">
-        <div class="tut-num">2</div>
-        <div class="tut-content">
-          <h4>El PEPP se calcula solo</h4>
-          <p>Al ingresar el peso, la app calcula automáticamente el <strong style="color:var(--accent)">PEPP (%)</strong> — el porcentaje de exceso de peso perdido — comparándolo con el registro anterior.</p>
-        </div>
-      </div>
-
-      <div class="tut-step">
-        <div class="tut-num">3</div>
-        <div class="tut-content">
-          <h4>Revisar el Dashboard</h4>
-          <p>El panel principal muestra tus últimas medidas, si están dentro del rango óptimo, y las gráficas de evolución. Usa las pestañas para ver diferentes indicadores.</p>
-        </div>
-      </div>
-
-      <div class="tut-step">
-        <div class="tut-num">4</div>
-        <div class="tut-content">
-          <h4>Historial completo</h4>
-          <p>En la sección 📋 Historial verás todos tus registros con el PEPP de cada semana. Puedes eliminar registros incorrectos tocando el botón rojo.</p>
-        </div>
-      </div>
+    <div class="card card-pad" style="margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">📊 Valores de Referencia</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Rangos óptimos para hombres adultos</div>
+      <div class="info-row"><span class="info-label">Perímetro Abdominal</span><span style="font-weight:600;color:var(--accent)">&lt; 94 cm</span></div>
+      <div class="info-row"><span class="info-label">Masa Grasa</span><span style="font-weight:600;color:var(--accent)">13 – 24 %</span></div>
+      <div class="info-row"><span class="info-label">Masa Muscular</span><span style="font-weight:600;color:var(--accent)">32.9 – 38.9 %</span></div>
+      <div class="info-row"><span class="info-label">Grasa Visceral</span><span style="font-weight:600;color:var(--accent)">&lt;= 9</span></div>
+      <div class="info-row"><span class="info-label">BMI</span><span style="font-weight:600;color:var(--accent)">18.5 – 24.9</span></div>
+      <div class="info-row"><span class="info-label">PEPP positivo ↓</span><span style="font-weight:600;color:var(--good)">Pérdida de peso ✓</span></div>
+      <div class="info-row"><span class="info-label">PEPP negativo ↑</span><span style="font-weight:600;color:var(--bad)">Aumento de peso</span></div>
     </div>
-
-    <!-- Parámetros -->
-    <div class="card card-pad" style="margin-bottom:16px;">
-      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">📊 Valores de Referencia</div>
-      <div style="font-size:12px; color:var(--muted); margin-bottom:16px;">Rangos óptimos para hombres adultos</div>
-      <div class="info-row"><span class="info-label">Perímetro Abdominal</span><span class="info-val" style="color:var(--accent)">&lt; 94 cm</span></div>
-      <div class="info-row"><span class="info-label">Masa Grasa</span><span class="info-val" style="color:var(--accent)">13 – 24 %</span></div>
-      <div class="info-row"><span class="info-label">Masa Muscular</span><span class="info-val" style="color:var(--accent)">32.9 – 38.9 %</span></div>
-      <div class="info-row"><span class="info-label">Grasa Visceral</span><span class="info-val" style="color:var(--accent)">&lt;= 9</span></div>
-      <div class="info-row"><span class="info-label">BMI (Hombre)</span><span class="info-val" style="color:var(--accent)">18.5 – 24.9</span></div>
-      <div class="info-row"><span class="info-label">PEPP positivo</span><span class="info-val" style="color:var(--accent)">Pérdida de peso</span></div>
-      <div class="info-row"><span class="info-label">PEPP negativo</span><span class="info-val" style="color:var(--bad)">Aumento de peso</span></div>
+    <div class="card card-pad" style="margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">💾 Datos y respaldo</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Los datos se guardan localmente en tu iPhone. No se borran al actualizar la app. Exporta periódicamente como respaldo.</div>
+      <button class="btn-primary" onclick="exportData()" style="margin-top:0">Exportar datos (JSON)</button>
     </div>
-
-    <!-- Almacenamiento -->
-    <div class="card card-pad" style="margin-bottom:16px;">
-      <div style="font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px;">💾 Almacenamiento de datos</div>
-      <div style="font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.6;">
-        Los datos se guardan en el almacenamiento local de tu iPhone de forma segura. <strong style="color:var(--text)">Los datos persisten aunque cierres la app</strong>, pero se borran si limpias los datos de Safari. Se recomienda exportar periódicamente.
-      </div>
-      <button class="btn-primary" onclick="exportData()" style="margin-top:0;">Exportar datos (JSON)</button>
-    </div>
-
   </div>
 </div>
 
-<!-- BOTTOM NAV -->
+<!-- NAV -->
 <nav>
-  <button class="nav-btn active" onclick="goPage('dashboard', this)">
+  <button class="nav-btn active" onclick="goPage('dashboard',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
     Dashboard
   </button>
-  <button class="nav-btn" onclick="goPage('registro', this)">
+  <button class="nav-btn" onclick="goPage('registro',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     Registro
   </button>
-  <button class="nav-btn" onclick="goPage('historial', this)">
+  <button class="nav-btn" onclick="goPage('historial',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
     Historial
   </button>
-  <button class="nav-btn" onclick="goPage('tutorial', this)">
+  <button class="nav-btn" onclick="goPage('tutorial',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><circle cx="12" cy="16" r="0.5" fill="currentColor"/></svg>
     Tutorial
   </button>
 </nav>
 
 <script>
-// ==============================
+// ============================================================
 // STORAGE
-// ==============================
-const STORAGE_KEY = 'antropometrico_records';
+// ============================================================
+const SK = 'antropometrico_v2';
+function loadRecords(){ try{ return JSON.parse(localStorage.getItem(SK)||'[]'); }catch(e){ return []; } }
+function saveRecords(r){ localStorage.setItem(SK, JSON.stringify(r)); }
 
-function loadRecords() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  } catch(e) { return []; }
+// ============================================================
+// UTILS
+// ============================================================
+function parseDecimal(s){
+  if(!s||s.trim()==='') return null;
+  const n = s.trim().replace(',','.');
+  if(!/^-?\d+(\.\d+)?$/.test(n)) return null;
+  const v = parseFloat(n);
+  return isNaN(v)?null:v;
+}
+function fmtDate(iso){
+  const d = new Date(iso+'T12:00:00');
+  return d.toLocaleDateString('es-BO',{day:'2-digit',month:'short'});
+}
+function fmtDateLong(iso){
+  const d = new Date(iso+'T12:00:00');
+  return d.toLocaleDateString('es-BO',{day:'2-digit',month:'long',year:'numeric'});
+}
+function calcPEPP(prev,curr){
+  if(!prev||!curr) return null;
+  return ((prev-curr)/prev)*100;
+}
+function recalcAllPEPP(){
+  const r = loadRecords();
+  r.forEach((rec,i)=>{ rec.pepp = i===0?null:calcPEPP(r[i-1].peso,rec.peso); });
+  saveRecords(r);
 }
 
-function saveRecords(records) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-}
-
-// ==============================
-// CALCULATIONS
-// ==============================
-
-// PEPP = ((PesoAnterior - PesoActual) / (PesoAnterior - PesoIdeal)) * 100
-// Since we don't always have ideal weight, we use simplified:
-// PEPP = ((pesoPrevio - pesoActual) / pesoPrevio) * 100
-// More standard: percent excess weight lost relative to first record
-function calcPEPP(records, currentIndex) {
-  if (currentIndex === 0 || records.length < 2) return null;
-  const prev = records[currentIndex - 1].peso;
-  const curr = records[currentIndex].peso;
-  if (!prev || !curr) return null;
-  return ((prev - curr) / prev) * 100;
-}
-
-// Simplified PEPP between any two weights
-function calcPEPPBetween(prevPeso, currPeso) {
-  if (!prevPeso || !currPeso) return null;
-  return ((prevPeso - currPeso) / prevPeso) * 100;
-}
-
-// Status
 const RANGES = {
-  perimetro: { opt: [0, 94], label: 'Perímetro Abdominal', unit: 'cm', higherBad: true },
-  grasa: { opt: [13, 24], label: 'Masa Grasa', unit: '%', higherBad: true },
-  muscular: { opt: [32.9, 38.9], label: 'Masa Muscular', unit: '%', higherBad: false },
-  visceral: { opt: [0, 9], label: 'Grasa Visceral', unit: '', higherBad: true },
-  bmi: { opt: [18.5, 24.9], label: 'BMI', unit: 'kg/m²', higherBad: true },
+  perimetro:{ label:'Perímetro Abdominal', unit:'cm',  lo:0,    hi:94,   higherBad:true  },
+  grasa:    { label:'Masa Grasa',          unit:'%',   lo:13,   hi:24,   higherBad:true  },
+  muscular: { label:'Masa Muscular',       unit:'%',   lo:32.9, hi:38.9, higherBad:false },
+  visceral: { label:'Grasa Visceral',      unit:'',    lo:0,    hi:9,    higherBad:true  },
+  bmi:      { label:'BMI',                 unit:'kg/m²',lo:18.5,hi:24.9, higherBad:true  },
 };
-
-function getStatus(key, val) {
-  const r = RANGES[key];
-  if (!r || val === null || val === undefined || val === '') return 'unknown';
-  const v = parseFloat(val);
-  if (v >= r.opt[0] && v <= r.opt[1]) return 'ok';
-  if (r.higherBad && v > r.opt[1]) return 'bad';
-  if (!r.higherBad && v < r.opt[0]) return 'bad';
-  if (r.higherBad && v > r.opt[1] * 1.1) return 'bad';
+function getStatus(key,val){
+  if(val===null||val===undefined||val==='') return 'unknown';
+  const r=RANGES[key]; const v=parseFloat(val);
+  if(v>=r.lo&&v<=r.hi) return 'ok';
+  if(r.higherBad&&v>r.hi) return 'bad';
+  if(!r.higherBad&&v<r.lo) return 'bad';
   return 'warn';
 }
 
-function statusLabel(s) {
-  if (s === 'ok') return ['pill-ok', '✓ Óptimo'];
-  if (s === 'warn') return ['pill-warn', '⚠ Atención'];
-  if (s === 'bad') return ['pill-bad', '✗ Fuera de rango'];
-  return ['', '—'];
-}
-
-// ==============================
-// FORM HELPERS
-// ==============================
-
-// Numeric fields that accept decimals
-const DECIMAL_FIELDS = ['inp-peso','inp-perimetro','inp-bmi','inp-grasa','inp-muscular','inp-visceral','inp-rm'];
-
-// Convert string with , or . to float, return null if invalid
-function parseDecimal(str) {
-  if (!str || str.trim() === '') return null;
-  // Replace comma with dot
-  const normalized = str.trim().replace(',', '.');
-  // Must match a valid number pattern: optional sign, digits, optional decimal
-  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return null;
-  const val = parseFloat(normalized);
-  return isNaN(val) ? null : val;
-}
-
-function clearField(id) {
-  const inp = document.getElementById(id);
-  inp.value = '';
-  inp.classList.remove('inp-invalid');
-  const err = document.getElementById('err-' + id.replace('inp-',''));
-  if (err) err.textContent = '';
-  inp.focus();
-  if (id === 'inp-peso') updatePEPPPreview();
-}
-
-function clearAllFields() {
-  DECIMAL_FIELDS.forEach(id => clearField(id));
-  // Reset date to today
-  document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
-  document.getElementById('pepp-preview').innerHTML = '';
-  // Clear all errors
-  document.querySelectorAll('.inp-error').forEach(e => e.textContent = '');
-  document.querySelectorAll('input').forEach(i => i.classList.remove('inp-invalid'));
-  cancelEdit();
-}
-
-function showFieldError(fieldSuffix, msg) {
-  const err = document.getElementById('err-' + fieldSuffix);
-  const inp = document.getElementById('inp-' + fieldSuffix);
-  if (err) err.textContent = msg;
-  if (inp) inp.classList.add('inp-invalid');
-}
-
-function clearFieldError(fieldSuffix) {
-  const err = document.getElementById('err-' + fieldSuffix);
-  const inp = document.getElementById('inp-' + fieldSuffix);
-  if (err) err.textContent = '';
-  if (inp) inp.classList.remove('inp-invalid');
-}
-
-// Validate all fields, return object with parsed values or null on hard error
-function validateForm() {
-  let valid = true;
-  const parsed = {};
-
-  // Validate each decimal field
-  const fieldMap = [
-    { id:'peso',      label:'Peso',             required:true,  min:20,   max:400 },
-    { id:'perimetro', label:'Per. Abdominal',   required:false, min:40,   max:300 },
-    { id:'bmi',       label:'BMI',              required:false, min:10,   max:80  },
-    { id:'grasa',     label:'Masa Grasa',       required:false, min:0,    max:70  },
-    { id:'muscular',  label:'Masa Muscular',    required:false, min:0,    max:70  },
-    { id:'visceral',  label:'Grasa Visceral',   required:false, min:0,    max:60  },
-    { id:'rm',        label:'RM',               required:false, min:0,    max:500 },
-  ];
-
-  fieldMap.forEach(f => {
-    clearFieldError(f.id);
-    const raw = document.getElementById('inp-' + f.id).value;
-    if (!raw || raw.trim() === '') {
-      parsed[f.id] = null;
-      if (f.required) {
-        showFieldError(f.id, `${f.label} es obligatorio`);
-        valid = false;
-      }
-      return;
-    }
-    const val = parseDecimal(raw);
-    if (val === null) {
-      showFieldError(f.id, `Valor inválido — usa números con , o .`);
-      valid = false;
-      return;
-    }
-    if (val < f.min || val > f.max) {
-      showFieldError(f.id, `Fuera de rango esperado (${f.min}–${f.max})`);
-      valid = false;
-      return;
-    }
-    parsed[f.id] = val;
-  });
-
-  return valid ? parsed : null;
-}
-
-// ==============================
-// EDIT MODE
-// ==============================
-let editingId = null;
-
-function cancelEdit() {
-  editingId = null;
-  document.getElementById('edit-banner').style.display = 'none';
-  document.getElementById('btn-save').textContent = 'Guardar Registro';
-}
-
-function editRecord(id) {
-  const records = loadRecords();
-  const r = records.find(x => x.id === id);
-  if (!r) return;
-
-  editingId = id;
-  goPage('registro', document.querySelectorAll('.nav-btn')[1]);
-
-  setTimeout(() => {
-    document.getElementById('inp-fecha').value = r.fecha;
-    document.getElementById('inp-peso').value = r.peso !== null ? String(r.peso).replace('.', ',') : '';
-    document.getElementById('inp-perimetro').value = r.perimetro !== null ? String(r.perimetro).replace('.', ',') : '';
-    document.getElementById('inp-bmi').value = r.bmi !== null ? String(r.bmi).replace('.', ',') : '';
-    document.getElementById('inp-grasa').value = r.grasa !== null ? String(r.grasa).replace('.', ',') : '';
-    document.getElementById('inp-muscular').value = r.muscular !== null ? String(r.muscular).replace('.', ',') : '';
-    document.getElementById('inp-visceral').value = r.visceral !== null ? String(r.visceral).replace('.', ',') : '';
-    document.getElementById('inp-rm').value = r.rm !== null ? String(r.rm).replace('.', ',') : '';
-    document.getElementById('edit-banner').style.display = 'block';
-    document.getElementById('btn-save').textContent = '✓ Guardar Corrección';
-    updatePEPPPreview();
-  }, 50);
-}
-
-// ==============================
+// ============================================================
 // NAVIGATION
-// ==============================
-function goPage(name, btn) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (btn) btn.classList.add('active');
-
-  if (name === 'dashboard') renderDashboard();
-  if (name === 'historial') renderHistorial();
-  if (name === 'registro') setupForm();
+// ============================================================
+function goPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='dashboard') renderDashboard();
+  if(name==='historial') renderHistorial();
+  if(name==='registro'&&!editingId){ setupForm(); }
 }
 
-// ==============================
-// FORM
-// ==============================
-function setupForm() {
-  if (editingId) return; // Don't reset if editing
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('inp-fecha').value = today;
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
 
-  // Live validation on blur + PEPP preview on peso input
-  DECIMAL_FIELDS.forEach(id => {
-    const el = document.getElementById(id);
-    // Remove old listeners by cloning
-    const newEl = el.cloneNode(true);
-    el.parentNode.replaceChild(newEl, el);
-    newEl.addEventListener('blur', () => {
-      const raw = newEl.value;
-      if (!raw || raw.trim() === '') { newEl.classList.remove('inp-invalid'); return; }
-      const val = parseDecimal(raw);
-      if (val === null) {
-        newEl.classList.add('inp-invalid');
-        const suffix = id.replace('inp-','');
-        showFieldError(suffix, 'Valor inválido — usa , o . para decimales');
-      } else {
-        newEl.classList.remove('inp-invalid');
-        const suffix = id.replace('inp-','');
-        clearFieldError(suffix);
-        // Normalize: replace comma with dot in display
-        newEl.value = String(val);
-      }
-      if (id === 'inp-peso') updatePEPPPreview();
-    });
-    newEl.addEventListener('input', () => {
-      if (id === 'inp-peso') updatePEPPPreview();
-    });
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  const records = loadRecords();
+  if(records.length===0){
+    document.getElementById('pepp-section').innerHTML=`<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">Sin registros aún</div><div class="empty-desc">Ve a "Registro" para ingresar tu primer control.</div></div>`;
+    document.getElementById('stats-grid').innerHTML='';
+    document.getElementById('optimal-list').innerHTML='';
+    return;
+  }
+  const latest=records[records.length-1];
+  const prev=records.length>1?records[records.length-2]:null;
+  renderPEPP(latest,prev);
+  renderStats(latest,prev);
+  renderOptimal(latest);
+  // Charts rendered after small delay so DOM is settled
+  requestAnimationFrame(()=>{
+    renderMainChart(records, currentChartType);
+    renderDeltaChart(records, currentDeltaType);
+    renderRadarChart(records);
   });
 }
 
-function updatePEPPPreview() {
-  const records = loadRecords();
-  const raw = document.getElementById('inp-peso').value;
-  const pesoInput = parseDecimal(raw);
-  const preview = document.getElementById('pepp-preview');
-
-  if (!pesoInput || records.length === 0) {
-    preview.innerHTML = records.length === 0
-      ? '<span style="font-size:13px;color:var(--muted)">Primer registro — PEPP se calculará desde el próximo control</span>'
-      : '';
+function renderPEPP(latest,prev){
+  const sec=document.getElementById('pepp-section');
+  if(latest.pepp===null||latest.pepp===undefined){
+    sec.innerHTML=`<div class="pepp-card"><div class="pepp-icon">📋</div><div><div class="pepp-title">Primer registro</div><div class="pepp-value">—</div><div class="pepp-desc">Agrega un segundo control para ver el PEPP</div></div></div>`;
     return;
   }
-
-  // If editing, compare against the record before the edited one
-  let baseRecords = records;
-  if (editingId) {
-    const idx = records.findIndex(r => r.id === editingId);
-    baseRecords = records.slice(0, idx);
-  }
-  if (baseRecords.length === 0) { preview.innerHTML = ''; return; }
-
-  const lastPeso = baseRecords[baseRecords.length - 1].peso;
-  const pepp = calcPEPPBetween(lastPeso, pesoInput);
-
-  if (pepp === null) return;
-
-  const color = pepp > 0 ? 'var(--good)' : pepp < 0 ? 'var(--bad)' : 'var(--muted)';
-  const arrow = pepp > 0 ? '↓' : pepp < 0 ? '↑' : '→';
-  const label = pepp > 0 ? 'perdido respecto al control anterior' : pepp < 0 ? 'ganado respecto al control anterior' : 'sin cambio';
-
-  preview.innerHTML = `<span style="color:${color}">${arrow} ${Math.abs(pepp).toFixed(1)}% ${label}</span>`;
+  const p=latest.pepp, isLoss=p>0;
+  const col=isLoss?'var(--good)':'var(--bad)';
+  const icon=isLoss?'📉':'📈';
+  const lbl=isLoss?'de pérdida de peso':'de ganancia de peso';
+  const dk=prev?(prev.peso-latest.peso).toFixed(1):'—';
+  const ds=prev?(prev.peso>latest.peso?'-':'+'):'';
+  sec.innerHTML=`<div class="pepp-card" style="border-color:${col}40;background:linear-gradient(135deg,${col}10,transparent)"><div class="pepp-icon" style="border-color:${col};background:${col}15">${icon}</div><div><div class="pepp-title" style="color:${col}">PEPP — Último control</div><div class="pepp-value" style="color:${col}">${Math.abs(p).toFixed(1)}%</div><div class="pepp-desc">${lbl}${ds?` (${ds}${Math.abs(dk)} kg)`:''}</div></div></div>`;
 }
 
-function saveRecord() {
-  const fecha = document.getElementById('inp-fecha').value;
-  if (!fecha) { showToast('⚠️ La fecha es obligatoria'); return; }
-
-  const parsed = validateForm();
-  if (!parsed) {
-    showToast('⚠️ Corrige los errores del formulario');
-    return;
+function renderStats(latest,prev){
+  function dd(curr,pv,hb,u){
+    if(pv===null||pv===undefined||curr===null||curr===undefined) return '';
+    const d=curr-pv;
+    if(Math.abs(d)<0.01) return '<div class="stat-delta dn">→ Sin cambio</div>';
+    const g=hb?d<0:d>0;
+    return `<div class="stat-delta ${g?'dg':'db'}">${d<0?'↓':'↑'} ${Math.abs(d).toFixed(1)}${u}</div>`;
   }
-
-  let records = loadRecords();
-
-  if (editingId) {
-    // Update existing record
-    const idx = records.findIndex(r => r.id === editingId);
-    if (idx !== -1) {
-      records[idx] = { ...records[idx], fecha, ...parsed };
-    }
-    cancelEdit();
-  } else {
-    const record = { id: Date.now(), fecha, ...parsed, pepp: null };
-    records.push(record);
-  }
-
-  records.sort((a, b) => a.fecha.localeCompare(b.fecha));
-  saveRecords(records);
-  recalcAllPEPP();
-
-  showToast('✓ Registro guardado');
-  clearAllFields();
-  setTimeout(() => goPage('dashboard', document.querySelector('.nav-btn')), 800);
-}
-
-function recalcAllPEPP() {
-  const records = loadRecords();
-  for (let i = 0; i < records.length; i++) {
-    if (i === 0) {
-      records[i].pepp = null;
-    } else {
-      records[i].pepp = calcPEPPBetween(records[i-1].peso, records[i].peso);
-    }
-  }
-  saveRecords(records);
-}
-
-function deleteRecord(id) {
-  if (!confirm('¿Eliminar este registro?')) return;
-  let records = loadRecords().filter(r => r.id !== id);
-  saveRecords(records);
-  recalcAllPEPP();
-  renderHistorial();
-  showToast('Registro eliminado');
-}
-
-// ==============================
-// DASHBOARD
-// ==============================
-let mainChartInstance = null;
-let currentChartType = 'weight';
-let deltaChartInstance = null;
-let currentDeltaType = 'peso';
-let radarChartInstance = null;
-
-function renderDashboard() {
-  const records = loadRecords();
-  
-  if (records.length === 0) {
-    document.getElementById('pepp-section').innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📊</div>
-        <div class="empty-title">Sin registros aún</div>
-        <div class="empty-desc">Ve a "Registro" para ingresar<br>tu primer control antropométrico.</div>
-      </div>`;
-    document.getElementById('stats-grid').innerHTML = '';
-    document.getElementById('optimal-list').innerHTML = '';
-    return;
-  }
-  
-  const latest = records[records.length - 1];
-  const prev = records.length > 1 ? records[records.length - 2] : null;
-  
-  // PEPP section
-  renderPEPP(latest, prev);
-  
-  // Stats
-  renderStats(latest, prev);
-  
-  // Optimal
-  renderOptimal(latest);
-  
-  // Chart
-  renderChart(records, currentChartType);
-  renderDeltaChart(records, currentDeltaType);
-  renderRadarChart(records);
-}
-
-function renderPEPP(latest, prev) {
-  const section = document.getElementById('pepp-section');
-  
-  if (latest.pepp === null || latest.pepp === undefined) {
-    section.innerHTML = `
-      <div class="pepp-card" style="margin:0 16px 16px;">
-        <div class="pepp-icon">📋</div>
-        <div>
-          <div class="pepp-title">Primer registro</div>
-          <div class="pepp-value">—</div>
-          <div class="pepp-desc">Agrega un segundo control para ver el PEPP</div>
-        </div>
-      </div>`;
-    return;
-  }
-  
-  const pepp = latest.pepp;
-  const isLoss = pepp > 0;
-  const color = isLoss ? 'var(--good)' : 'var(--bad)';
-  const icon = isLoss ? '📉' : '📈';
-  const label = isLoss ? 'de pérdida de exceso de peso' : 'de ganancia de peso';
-  const diffKg = prev ? (prev.peso - latest.peso).toFixed(1) : '—';
-  const diffSign = prev ? (prev.peso > latest.peso ? '-' : '+') : '';
-  
-  section.innerHTML = `
-    <div class="pepp-card" style="margin:0 16px 16px; border-color:${color}40; background:linear-gradient(135deg, ${color}10 0%, transparent 100%);">
-      <div class="pepp-icon" style="border-color:${color}; background:${color}15;">${icon}</div>
-      <div>
-        <div class="pepp-title" style="color:${color}">PEPP — Último control</div>
-        <div class="pepp-value" style="color:${color}">${Math.abs(pepp).toFixed(1)}%</div>
-        <div class="pepp-desc">${label} ${diffSign !== '' ? `(${diffSign}${Math.abs(diffKg)} kg)` : ''}</div>
-      </div>
-    </div>`;
-}
-
-function renderStats(latest, prev) {
-  const grid = document.getElementById('stats-grid');
-  
-  function delta(curr, prev, higher_bad = true, unit = '') {
-    if (!prev || curr === null) return '';
-    const diff = curr - prev;
-    if (Math.abs(diff) < 0.01) return '<div class="stat-delta delta-neutral">→ Sin cambio</div>';
-    const good = higher_bad ? diff < 0 : diff > 0;
-    const cls = good ? 'delta-good' : 'delta-bad';
-    const arrow = diff < 0 ? '↓' : '↑';
-    return `<div class="stat-delta ${cls}">${arrow} ${Math.abs(diff).toFixed(1)}${unit}</div>`;
-  }
-  
-  const items = [
-    { label:'Peso', val: latest.peso, unit:'kg', delta: delta(latest.peso, prev?.peso, true, ' kg'), color: getStatus('bmi', latest.bmi) === 'ok' ? 'var(--good)' : 'var(--warn)' },
-    { label:'Per. Abdominal', val: latest.perimetro, unit:'cm', delta: delta(latest.perimetro, prev?.perimetro, true, ' cm'), color: getStatus('perimetro', latest.perimetro) === 'ok' ? 'var(--good)' : 'var(--bad)' },
-    { label:'Masa Grasa', val: latest.grasa, unit:'%', delta: delta(latest.grasa, prev?.grasa, true, '%'), color: getStatus('grasa', latest.grasa) === 'ok' ? 'var(--good)' : 'var(--bad)' },
-    { label:'Masa Muscular', val: latest.muscular, unit:'%', delta: delta(latest.muscular, prev?.muscular, false, '%'), color: getStatus('muscular', latest.muscular) === 'ok' ? 'var(--good)' : 'var(--warn)' },
-    { label:'Grasa Visceral', val: latest.visceral, unit:'', delta: delta(latest.visceral, prev?.visceral, true, ''), color: getStatus('visceral', latest.visceral) === 'ok' ? 'var(--good)' : 'var(--bad)' },
-    { label:'BMI', val: latest.bmi, unit:'kg/m²', delta: delta(latest.bmi, prev?.bmi, true, ''), color: getStatus('bmi', latest.bmi) === 'ok' ? 'var(--good)' : 'var(--warn)' },
+  const items=[
+    {l:'Peso',v:latest.peso,u:'kg',d:dd(latest.peso,prev?.peso,true,' kg'),c:getStatus('bmi',latest.bmi)==='ok'?'var(--good)':'var(--warn)'},
+    {l:'Per. Abdominal',v:latest.perimetro,u:'cm',d:dd(latest.perimetro,prev?.perimetro,true,' cm'),c:getStatus('perimetro',latest.perimetro)==='ok'?'var(--good)':'var(--bad)'},
+    {l:'Masa Grasa',v:latest.grasa,u:'%',d:dd(latest.grasa,prev?.grasa,true,'%'),c:getStatus('grasa',latest.grasa)==='ok'?'var(--good)':'var(--bad)'},
+    {l:'Masa Muscular',v:latest.muscular,u:'%',d:dd(latest.muscular,prev?.muscular,false,'%'),c:getStatus('muscular',latest.muscular)==='ok'?'var(--good)':'var(--warn)'},
+    {l:'Grasa Visceral',v:latest.visceral,u:'',d:dd(latest.visceral,prev?.visceral,true,''),c:getStatus('visceral',latest.visceral)==='ok'?'var(--good)':'var(--bad)'},
+    {l:'BMI',v:latest.bmi,u:'kg/m²',d:dd(latest.bmi,prev?.bmi,true,''),c:getStatus('bmi',latest.bmi)==='ok'?'var(--good)':'var(--warn)'},
   ];
-  
-  grid.innerHTML = items.map(item => `
-    <div class="stat-card" style="--indicator-color:${item.color}">
-      <div class="stat-label">${item.label}</div>
-      <div class="stat-value">${item.val !== null && item.val !== undefined ? item.val : '—'}<span class="stat-unit">${item.unit}</span></div>
-      ${item.delta}
-    </div>
-  `).join('');
+  document.getElementById('stats-grid').innerHTML=items.map(i=>`<div class="stat-card" style="--ic:${i.c}"><div class="stat-label">${i.l}</div><div class="stat-value">${i.v!==null&&i.v!==undefined?i.v:'—'}<span class="stat-unit">${i.u}</span></div>${i.d}</div>`).join('');
 }
 
-function renderOptimal(latest) {
-  const list = document.getElementById('optimal-list');
-  
-  const checks = [
-    { key: 'perimetro', val: latest.perimetro, range: '< 94 cm' },
-    { key: 'grasa', val: latest.grasa, range: '13–24%' },
-    { key: 'muscular', val: latest.muscular, range: '32.9–38.9%' },
-    { key: 'visceral', val: latest.visceral, range: '≤ 9' },
-    { key: 'bmi', val: latest.bmi, range: '18.5–24.9' },
+function renderOptimal(latest){
+  const checks=[
+    {k:'perimetro',v:latest.perimetro,r:'< 94 cm'},
+    {k:'grasa',v:latest.grasa,r:'13–24%'},
+    {k:'muscular',v:latest.muscular,r:'32.9–38.9%'},
+    {k:'visceral',v:latest.visceral,r:'≤ 9'},
+    {k:'bmi',v:latest.bmi,r:'18.5–24.9'},
   ];
-  
-  list.innerHTML = checks.map(c => {
-    const s = getStatus(c.key, c.val);
-    const [cls, lbl] = statusLabel(s);
-    const r = RANGES[c.key];
-    return `
-      <div class="optimal-row">
-        <div>
-          <div class="optimal-name">${r.label}</div>
-          <div class="optimal-range">Óptimo: ${c.range} · Actual: ${c.val !== null && c.val !== undefined ? c.val + ' ' + r.unit : '—'}</div>
-        </div>
-        ${s !== 'unknown' ? `<span class="status-pill ${cls}">${lbl}</span>` : '<span style="color:var(--muted);font-size:12px">Sin dato</span>'}
-      </div>`;
+  const pillMap={ok:'pill-ok',warn:'pill-warn',bad:'pill-bad'};
+  const pillLbl={ok:'✓ Óptimo',warn:'⚠ Atención',bad:'✗ Fuera de rango'};
+  document.getElementById('optimal-list').innerHTML=checks.map(c=>{
+    const s=getStatus(c.k,c.v); const rr=RANGES[c.k];
+    return `<div class="optimal-row"><div><div class="optimal-name">${rr.label}</div><div class="optimal-range">Óptimo: ${c.r} · Actual: ${c.v!==null&&c.v!==undefined?c.v+' '+rr.unit:'—'}</div></div>${s!=='unknown'?`<span class="pill ${pillMap[s]}">${pillLbl[s]}</span>`:'<span style="color:var(--muted);font-size:12px">Sin dato</span>'}</div>`;
   }).join('');
 }
 
-function renderChart(records, type) {
-  const labels = records.map(r => {
-    const d = new Date(r.fecha + 'T12:00:00');
-    return d.toLocaleDateString('es-BO', { day:'2-digit', month:'short' });
-  });
+// ============================================================
+// CHARTS
+// ============================================================
+let chartInst = { main:null, delta:null, radar:null };
+let currentChartType = 'weight';
+let currentDeltaType = 'peso';
+const chartOpen = { evolucion:true, cambios:true, radar:true };
 
-  const chartConfig = {
-    weight:   { field:'peso',      color:'#00d4aa', label:'Peso (kg)',        higherBad:true },
-    grasa:    { field:'grasa',     color:'#ff6b6b', label:'Masa Grasa (%)',   higherBad:true,  refLow:13,   refHigh:24   },
-    muscular: { field:'muscular',  color:'#ffd166', label:'Masa Muscular (%)',higherBad:false, refLow:32.9, refHigh:38.9 },
-    visceral: { field:'visceral',  color:'#a78bfa', label:'Grasa Visceral',   higherBad:true,  refHigh:9   },
-    bmi:      { field:'bmi',       color:'#38bdf8', label:'BMI (kg/m²)',      higherBad:true,  refLow:18.5, refHigh:24.9 },
-  };
+const CHART_CFG = {
+  weight:   {field:'peso',     color:'#00d4aa',label:'Peso (kg)',        hb:true},
+  grasa:    {field:'grasa',    color:'#ff6b6b',label:'Masa Grasa (%)',   hb:true, rlo:13,  rhi:24  },
+  muscular: {field:'muscular', color:'#ffd166',label:'Masa Muscular (%)',hb:false,rlo:32.9,rhi:38.9},
+  visceral: {field:'visceral', color:'#a78bfa',label:'Grasa Visceral',   hb:true,          rhi:9   },
+  bmi:      {field:'bmi',      color:'#38bdf8',label:'BMI (kg/m²)',      hb:true, rlo:18.5,rhi:24.9},
+};
 
-  const cfg = chartConfig[type] || chartConfig.weight;
-  const data = records.map(r => r[cfg.field]);
-  const color = cfg.color;
+function renderMainChart(records, type){
+  const cfg = CHART_CFG[type]||CHART_CFG.weight;
+  const labels = records.map(r=>fmtDate(r.fecha));
+  const data   = records.map(r=>r[cfg.field]);
+  const color  = cfg.color;
 
-  if (mainChartInstance) { mainChartInstance.destroy(); mainChartInstance = null; }
+  if(chartInst.main){ chartInst.main.destroy(); chartInst.main=null; }
 
   const canvas = document.getElementById('mainChart');
-  const ctx = canvas.getContext('2d');
+  const ctx    = canvas.getContext('2d');
+  const h      = canvas.offsetHeight||220;
+  const grad   = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, color+'55');
+  grad.addColorStop(1, color+'00');
 
-  // Gradient fill
-  const grad = ctx.createLinearGradient(0, 0, 0, 220);
-  grad.addColorStop(0, color + '40');
-  grad.addColorStop(1, color + '00');
-
-  const datasets = [{
-    label: cfg.label,
-    data,
-    borderColor: color,
-    backgroundColor: grad,
-    borderWidth: 2.5,
-    pointBackgroundColor: data.map((v, i) => {
-      if (i === 0 || data[i-1] === null) return color;
-      const decreased = data[i] < data[i-1];
-      return (cfg.higherBad ? decreased : !decreased) ? '#00d4aa' : '#ff6b6b';
+  const datasets=[{
+    label: cfg.label, data,
+    borderColor: color, backgroundColor: grad,
+    borderWidth:2.5,
+    pointBackgroundColor: data.map((v,i)=>{
+      if(i===0||data[i-1]===null) return color;
+      return (cfg.hb ? v<data[i-1] : v>data[i-1]) ? '#00d4aa':'#ff6b6b';
     }),
-    pointBorderColor: '#060d1a',
-    pointBorderWidth: 2,
-    pointRadius: 6,
-    pointHoverRadius: 8,
-    fill: true,
-    tension: 0.35,
-    spanGaps: true,
+    pointBorderColor:'#060d1a', pointBorderWidth:2,
+    pointRadius:6, pointHoverRadius:8,
+    fill:true, tension:0.35, spanGaps:true,
   }];
 
-  // Reference band if available
-  if (cfg.refHigh !== undefined) {
-    const lo = cfg.refLow !== undefined ? cfg.refLow : Math.min(...data.filter(Boolean)) * 0.8;
-    datasets.push({
-      label: 'Zona óptima',
-      data: records.map(() => cfg.refHigh),
-      borderColor: 'rgba(255,255,255,0.12)',
-      borderWidth: 1,
-      borderDash: [4,4],
-      pointRadius: 0,
-      fill: cfg.refLow !== undefined ? '-1' : false,
-      backgroundColor: 'rgba(0,212,170,0.06)',
-      tension: 0,
-    });
-    if (cfg.refLow !== undefined) {
-      datasets.push({
-        label: 'Límite inferior',
-        data: records.map(() => cfg.refLow),
-        borderColor: 'rgba(255,255,255,0.08)',
-        borderWidth: 1,
-        borderDash: [4,4],
-        pointRadius: 0,
-        fill: false,
-        tension: 0,
-      });
-    }
+  if(cfg.rhi!==undefined){
+    datasets.push({ label:'Límite sup.', data:records.map(()=>cfg.rhi), borderColor:'rgba(255,255,255,0.18)', borderWidth:1, borderDash:[4,4], pointRadius:0, fill:false, tension:0 });
+  }
+  if(cfg.rlo!==undefined){
+    datasets.push({ label:'Límite inf.', data:records.map(()=>cfg.rlo), borderColor:'rgba(255,255,255,0.1)',  borderWidth:1, borderDash:[4,4], pointRadius:0, fill:false, tension:0 });
   }
 
-  mainChartInstance = new Chart(ctx, {
-    type: 'line',
-    data: { labels, datasets },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 400 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#0d1f35',
-          borderColor: color,
-          borderWidth: 1,
-          titleColor: '#e8f4f8',
-          bodyColor: '#6a8fa8',
-          filter: item => item.datasetIndex === 0,
-          callbacks: {
-            afterLabel: (tooltipItem) => {
-              const idx = tooltipItem.dataIndex;
-              const r = records[idx];
-              const lines = [];
-              if (type === 'weight' && r.pepp !== null && r.pepp !== undefined) {
-                lines.push(`PEPP: ${r.pepp > 0 ? '↓' : '↑'}${Math.abs(r.pepp).toFixed(1)}%`);
-              }
-              if (idx > 0 && data[idx] !== null && data[idx-1] !== null) {
-                const diff = (data[idx] - data[idx-1]).toFixed(1);
-                lines.push(`Cambio: ${diff > 0 ? '+' : ''}${diff}`);
-              }
+  chartInst.main = new Chart(ctx,{
+    type:'line', data:{labels,datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{duration:300},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0d1f35', borderColor:color, borderWidth:1,
+          titleColor:'#e8f4f8', bodyColor:'#6a8fa8',
+          filter:i=>i.datasetIndex===0,
+          callbacks:{
+            afterLabel:(ti)=>{
+              const idx=ti.dataIndex, r=records[idx], lines=[];
+              if(type==='weight'&&r.pepp!=null) lines.push(`PEPP: ${r.pepp>0?'↓':'↑'}${Math.abs(r.pepp).toFixed(1)}%`);
+              if(idx>0&&data[idx]!=null&&data[idx-1]!=null){ const d=(data[idx]-data[idx-1]).toFixed(1); lines.push(`Cambio: ${d>0?'+':''}${d}`); }
               return lines;
             }
           }
         }
       },
-      scales: {
-        x: {
-          grid: { color:'rgba(255,255,255,0.04)' },
-          ticks: { color:'#6a8fa8', font:{ size:10 }, maxRotation: 0 }
-        },
-        y: {
-          grid: { color:'rgba(255,255,255,0.04)' },
-          ticks: { color:'#6a8fa8', font:{ size:10 } }
-        }
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6a8fa8',font:{size:10},maxRotation:0,maxTicksLimit:6}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6a8fa8',font:{size:10}}}
       },
-      interaction: { intersect:false, mode:'index' },
+      interaction:{intersect:false,mode:'index'},
     }
   });
-
-  // Update tabs
-  document.querySelectorAll('#chart-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-  const tabMap = ['weight','grasa','muscular','visceral','bmi'];
-  document.querySelectorAll('#chart-tabs .tab-btn')[tabMap.indexOf(type)]?.classList.add('active');
 }
 
-function switchChart(type) {
-  currentChartType = type;
-  renderChart(loadRecords(), type);
-}
-
-// ==============================
-// DELTA BAR CHART
-// ==============================
-
-function renderDeltaChart(records, field) {
-  if (records.length < 2) {
-    if (deltaChartInstance) { deltaChartInstance.destroy(); deltaChartInstance = null; }
-    return;
+function switchChart(type,btn){
+  currentChartType=type;
+  if(btn){
+    btn.closest('.chart-card').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
   }
+  renderMainChart(loadRecords(),type);
+}
 
-  // Build deltas: index 1..n  (skip first record — no previous)
-  const labels = [];
-  const deltas = [];
-  const colors = [];
-
-  const fieldMeta = {
-    peso:      { label:'Peso (kg)',        higherBad:true },
-    grasa:     { label:'Masa Grasa (%)',   higherBad:true },
-    muscular:  { label:'Masa Muscular (%)',higherBad:false },
-    visceral:  { label:'Grasa Visceral',   higherBad:true },
-    perimetro: { label:'Per. Abdominal (cm)',higherBad:true },
+function renderDeltaChart(records,field){
+  const FMETA={
+    peso:     {label:'Peso (kg)',         hb:true},
+    grasa:    {label:'Masa Grasa (%)',    hb:true},
+    muscular: {label:'Masa Muscular (%)', hb:false},
+    visceral: {label:'Grasa Visceral',    hb:true},
+    perimetro:{label:'Per. Abdominal (cm)',hb:true},
   };
-  const meta = fieldMeta[field];
-
-  for (let i = 1; i < records.length; i++) {
-    const prev = records[i-1][field];
-    const curr = records[i][field];
-    if (prev === null || curr === null || prev === undefined || curr === undefined) continue;
-    const diff = parseFloat((curr - prev).toFixed(2));
-    const d1 = new Date(records[i].fecha + 'T12:00:00');
-    labels.push(d1.toLocaleDateString('es-BO', { day:'2-digit', month:'short' }));
+  if(chartInst.delta){ chartInst.delta.destroy(); chartInst.delta=null; }
+  if(records.length<2) return;
+  const meta=FMETA[field];
+  const labels=[],deltas=[],colors=[];
+  for(let i=1;i<records.length;i++){
+    const pv=records[i-1][field], cv=records[i][field];
+    if(pv==null||cv==null) continue;
+    const diff=parseFloat((cv-pv).toFixed(2));
+    labels.push(fmtDate(records[i].fecha));
     deltas.push(diff);
-    // Good = going in the right direction
-    const isGood = meta.higherBad ? diff < 0 : diff > 0;
-    colors.push(isGood ? 'rgba(0,212,170,0.85)' : diff === 0 ? 'rgba(106,143,168,0.6)' : 'rgba(255,107,107,0.85)');
+    const good=meta.hb?diff<0:diff>0;
+    colors.push(good?'rgba(0,212,170,0.85)':diff===0?'rgba(106,143,168,0.6)':'rgba(255,107,107,0.85)');
   }
-
-  if (deltaChartInstance) { deltaChartInstance.destroy(); deltaChartInstance = null; }
-
-  const ctx = document.getElementById('deltaChart').getContext('2d');
-
-  deltaChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: meta.label,
-        data: deltas,
-        backgroundColor: colors,
-        borderColor: colors.map(c => c.replace('0.85','1').replace('0.6','0.9')),
-        borderWidth: 1.5,
-        borderRadius: 6,
-        borderSkipped: false,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 400 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#0d1f35',
-          borderColor: 'rgba(0,212,170,0.3)',
-          borderWidth: 1,
-          titleColor: '#e8f4f8',
-          bodyColor: '#6a8fa8',
-          callbacks: {
-            label: (item) => {
-              const v = item.raw;
-              const sign = v > 0 ? '+' : '';
-              const dir = meta.higherBad
-                ? (v < 0 ? '↓ Mejoró' : v > 0 ? '↑ Empeoró' : '→ Igual')
-                : (v > 0 ? '↑ Mejoró' : v < 0 ? '↓ Empeoró' : '→ Igual');
-              return ` ${dir}  (${sign}${v})`;
-            }
-          }
+  const ctx=document.getElementById('deltaChart').getContext('2d');
+  chartInst.delta=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:meta.label,data:deltas,backgroundColor:colors,borderColor:colors,borderWidth:1.5,borderRadius:6,borderSkipped:false}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:300},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0d1f35',borderColor:'rgba(0,212,170,0.3)',borderWidth:1,
+          titleColor:'#e8f4f8',bodyColor:'#6a8fa8',
+          callbacks:{label:(ti)=>{const v=ti.raw,s=v>0?'+':'',dir=meta.hb?(v<0?'↓ Mejoró':v>0?'↑ Empeoró':'→ Igual'):(v>0?'↑ Mejoró':v<0?'↓ Empeoró':'→ Igual');return ` ${dir} (${s}${v})`;}}
         }
       },
-      scales: {
-        x: {
-          grid: { color:'rgba(255,255,255,0.04)' },
-          ticks: { color:'#6a8fa8', font:{ size:10 }, maxRotation: 0 }
-        },
-        y: {
-          grid: { color:'rgba(255,255,255,0.05)' },
-          ticks: { color:'#6a8fa8', font:{ size:10 } },
-          border: { dash:[4,4] },
-        }
-      },
-    }
-  });
-
-  // Update tabs
-  document.querySelectorAll('#delta-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-  const dMap = ['peso','grasa','muscular','visceral','perimetro'];
-  document.querySelectorAll('#delta-tabs .tab-btn')[dMap.indexOf(field)]?.classList.add('active');
-}
-
-function switchDelta(field) {
-  currentDeltaType = field;
-  renderDeltaChart(loadRecords(), field);
-}
-
-// ==============================
-// TOGGLE CHARTS OPEN / CLOSE
-// ==============================
-const chartOpenState = { evolucion: true, cambios: true, radar: true };
-
-function toggleChart(name) {
-  const body = document.getElementById('body-' + name);
-  const btn  = document.getElementById('toggle-' + name);
-  chartOpenState[name] = !chartOpenState[name];
-
-  if (chartOpenState[name]) {
-    // Open
-    body.classList.remove('chart-body-collapsed');
-    btn.textContent = '✕';
-    btn.classList.remove('closed');
-    btn.title = 'Cerrar gráfica';
-    // Re-render the relevant chart after layout settles
-    setTimeout(() => {
-      const records = loadRecords();
-      if (name === 'evolucion') renderChart(records, currentChartType);
-      if (name === 'cambios')   renderDeltaChart(records, currentDeltaType);
-      if (name === 'radar')     renderRadarChart(records);
-    }, 50);
-  } else {
-    // Close
-    body.classList.add('chart-body-collapsed');
-    btn.textContent = '▼';
-    btn.classList.add('closed');
-    btn.title = 'Abrir gráfica';
-  }
-}
-
-// ==============================
-// RADAR CHART
-// ==============================
-
-function renderRadarChart(records) {
-  if (records.length === 0) return;
-  const latest = records[records.length - 1];
-
-  // Normalize each parameter to 0-100 where 100 = perfectly in optimal range center
-  // For "higher is bad": score = 100 if at/below min optimal, 0 if at 2x max
-  // For "lower is bad": score = 100 if at/above max optimal, 0 if at half min
-  function score(val, low, high, higherBad) {
-    if (val === null || val === undefined) return 0;
-    const v = parseFloat(val);
-    const center = (low + high) / 2;
-    const range = high - low;
-    if (higherBad) {
-      // Perfect = at or below center; bad = far above high
-      if (v <= low) return 100;
-      if (v <= center) return 90;
-      if (v <= high) return 70;
-      const excess = (v - high) / (range || 1);
-      return Math.max(0, Math.round(70 - excess * 70));
-    } else {
-      if (v >= high) return 100;
-      if (v >= center) return 90;
-      if (v >= low) return 70;
-      const deficit = (low - v) / (range || 1);
-      return Math.max(0, Math.round(70 - deficit * 70));
-    }
-  }
-
-  const data = [
-    score(latest.perimetro, 70, 94,   true),   // Perímetro: lower=better
-    score(latest.grasa,     13,  24,  true),   // Grasa: within range
-    score(latest.muscular,  32.9,38.9,false),  // Músculo: higher=better
-    score(latest.visceral,  1,   9,   true),   // Visceral: lower=better
-    score(latest.bmi,       18.5,24.9,true),   // BMI: within range
-  ];
-
-  const axisLabels = ['Per. Abdominal','Masa Grasa','Masa Muscular','Grasa Visceral','BMI'];
-
-  if (radarChartInstance) { radarChartInstance.destroy(); radarChartInstance = null; }
-
-  const ctx = document.getElementById('radarChart').getContext('2d');
-
-  radarChartInstance = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: axisLabels,
-      datasets: [
-        {
-          label: 'Zona óptima',
-          data: [100,100,100,100,100],
-          borderColor: 'rgba(255,255,255,0.1)',
-          backgroundColor: 'rgba(0,212,170,0.05)',
-          borderWidth: 1,
-          pointRadius: 0,
-        },
-        {
-          label: 'Tu perfil',
-          data,
-          borderColor: '#00d4aa',
-          backgroundColor: 'rgba(0,212,170,0.18)',
-          borderWidth: 2.5,
-          pointBackgroundColor: data.map(v => v >= 70 ? '#00d4aa' : v >= 40 ? '#ffd166' : '#ff6b6b'),
-          pointBorderColor: '#060d1a',
-          pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 7,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 400 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#0d1f35',
-          borderColor: 'rgba(0,212,170,0.3)',
-          borderWidth: 1,
-          titleColor: '#e8f4f8',
-          bodyColor: '#6a8fa8',
-          callbacks: {
-            label: (item) => {
-              if (item.datasetIndex === 0) return null;
-              const v = item.raw;
-              const status = v >= 70 ? '✓ Óptimo' : v >= 40 ? '⚠ Atención' : '✗ Fuera de rango';
-              return ` ${status} (score: ${v}/100)`;
-            }
-          }
-        }
-      },
-      scales: {
-        r: {
-          min: 0,
-          max: 100,
-          ticks: {
-            display: false,
-            stepSize: 25,
-          },
-          grid: { color: 'rgba(255,255,255,0.07)' },
-          angleLines: { color: 'rgba(255,255,255,0.07)' },
-          pointLabels: {
-            color: '#6a8fa8',
-            font: { size: 11, family: "'DM Sans', sans-serif", weight: '600' },
-          }
-        }
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6a8fa8',font:{size:10},maxRotation:0,maxTicksLimit:6}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6a8fa8',font:{size:10}},border:{dash:[4,4]}}
       }
     }
   });
 }
 
-// ==============================
-// HISTORIAL
-// ==============================
-function renderHistorial() {
-  const records = loadRecords();
-  const container = document.getElementById('history-list');
-  
-  if (records.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">📋</div>
-        <div class="empty-title">Sin registros</div>
-        <div class="empty-desc">Agrega tu primer control desde la sección Registro.</div>
-      </div>`;
+function switchDelta(field,btn){
+  currentDeltaType=field;
+  if(btn){
+    btn.closest('.chart-card').querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  renderDeltaChart(loadRecords(),field);
+}
+
+function renderRadarChart(records){
+  if(records.length===0) return;
+  if(chartInst.radar){ chartInst.radar.destroy(); chartInst.radar=null; }
+  const latest=records[records.length-1];
+  function score(val,lo,hi,hb){
+    if(val==null) return 0;
+    const v=parseFloat(val),c=(lo+hi)/2,rng=hi-lo;
+    if(hb){ if(v<=lo)return 100;if(v<=c)return 90;if(v<=hi)return 70;return Math.max(0,Math.round(70-((v-hi)/(rng||1))*70)); }
+    else  { if(v>=hi)return 100;if(v>=c)return 90;if(v>=lo)return 70;return Math.max(0,Math.round(70-((lo-v)/(rng||1))*70)); }
+  }
+  const data=[
+    score(latest.perimetro,70,94,true),
+    score(latest.grasa,13,24,true),
+    score(latest.muscular,32.9,38.9,false),
+    score(latest.visceral,1,9,true),
+    score(latest.bmi,18.5,24.9,true),
+  ];
+  const ctx=document.getElementById('radarChart').getContext('2d');
+  chartInst.radar=new Chart(ctx,{
+    type:'radar',
+    data:{
+      labels:['Per. Abdominal','Masa Grasa','Masa Muscular','Grasa Visceral','BMI'],
+      datasets:[
+        {label:'Zona óptima',data:[100,100,100,100,100],borderColor:'rgba(255,255,255,0.12)',backgroundColor:'rgba(0,212,170,0.05)',borderWidth:1,pointRadius:0},
+        {label:'Tu perfil',data,borderColor:'#00d4aa',backgroundColor:'rgba(0,212,170,0.2)',borderWidth:2.5,
+          pointBackgroundColor:data.map(v=>v>=70?'#00d4aa':v>=40?'#ffd166':'#ff6b6b'),
+          pointBorderColor:'#060d1a',pointBorderWidth:2,pointRadius:5,pointHoverRadius:7}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,animation:{duration:300},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0d1f35',borderColor:'rgba(0,212,170,0.3)',borderWidth:1,
+          titleColor:'#e8f4f8',bodyColor:'#6a8fa8',
+          callbacks:{label:(ti)=>{ if(ti.datasetIndex===0)return null; const v=ti.raw; return ` ${v>=70?'✓ Óptimo':v>=40?'⚠ Atención':'✗ Fuera de rango'} (${v}/100)`; }}
+        }
+      },
+      scales:{r:{min:0,max:100,ticks:{display:false,stepSize:25},grid:{color:'rgba(255,255,255,0.07)'},angleLines:{color:'rgba(255,255,255,0.07)'},pointLabels:{color:'#6a8fa8',font:{size:11,weight:'600'}}}}
+    }
+  });
+}
+
+// ============================================================
+// TOGGLE CHARTS
+// ============================================================
+function toggleChart(name){
+  const body = document.getElementById('cb-'+name);
+  const btn  = document.getElementById('cbtn-'+name);
+  chartOpen[name] = !chartOpen[name];
+  if(chartOpen[name]){
+    body.classList.remove('closed'); body.classList.add('open');
+    btn.textContent='✕'; btn.classList.remove('is-closed'); btn.classList.add('is-open');
+    btn.title='Cerrar gráfica';
+    setTimeout(()=>{
+      const r=loadRecords();
+      if(name==='evolucion') renderMainChart(r,currentChartType);
+      if(name==='cambios')   renderDeltaChart(r,currentDeltaType);
+      if(name==='radar')     renderRadarChart(r);
+    },320);
+  } else {
+    body.classList.remove('open'); body.classList.add('closed');
+    btn.textContent='▼'; btn.classList.remove('is-open'); btn.classList.add('is-closed');
+    btn.title='Abrir gráfica';
+  }
+}
+
+// ============================================================
+// FORM
+// ============================================================
+const FIELDS=[
+  {id:'peso',     label:'Peso',           req:true, min:20,  max:400},
+  {id:'perimetro',label:'Per. Abdominal', req:false,min:40,  max:300},
+  {id:'bmi',      label:'BMI',            req:false,min:10,  max:80 },
+  {id:'grasa',    label:'Masa Grasa',     req:false,min:0,   max:70 },
+  {id:'muscular', label:'Masa Muscular',  req:false,min:0,   max:70 },
+  {id:'visceral', label:'Grasa Visceral', req:false,min:0,   max:60 },
+  {id:'rm',       label:'RM',             req:false,min:0,   max:500},
+];
+
+let editingId = null;
+
+function setupForm(){
+  document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
+  FIELDS.forEach(f=>{
+    const el=document.getElementById('inp-'+f.id);
+    el.addEventListener('blur',()=>liveValidate(f.id));
+    el.addEventListener('input',()=>{ if(f.id==='peso') updatePEPPPreview(); });
+  });
+}
+
+function liveValidate(id){
+  const f=FIELDS.find(x=>x.id===id);
+  const el=document.getElementById('inp-'+id);
+  const err=document.getElementById('err-'+id);
+  const raw=el.value;
+  el.classList.remove('invalid'); err.textContent='';
+  if(!raw||raw.trim()===''){
+    if(f.req){el.classList.add('invalid');err.textContent=`${f.label} es obligatorio`;}
     return;
   }
-  
-  // Newest first
-  const sorted = [...records].reverse();
-  
-  container.innerHTML = `<div class="card card-pad">` + sorted.map((r, i) => {
-    const date = new Date(r.fecha + 'T12:00:00').toLocaleDateString('es-BO', { day:'2-digit', month:'long', year:'numeric' });
-    const pepp = r.pepp;
-    let peppHtml = '<span style="color:var(--muted);font-size:12px">—</span>';
-    if (pepp !== null && pepp !== undefined) {
-      const c = pepp > 0 ? 'var(--good)' : 'var(--bad)';
-      const arrow = pepp > 0 ? '↓' : '↑';
-      peppHtml = `<span style="color:${c};font-size:14px;font-weight:700">${arrow} ${Math.abs(pepp).toFixed(1)}%</span>`;
+  const val=parseDecimal(raw);
+  if(val===null){el.classList.add('invalid');err.textContent='Valor inválido — usa , o . para decimales';return;}
+  if(val<f.min||val>f.max){el.classList.add('invalid');err.textContent=`Fuera de rango (${f.min}–${f.max})`;return;}
+  el.value=String(val); // normalize
+}
+
+function clearField(id){
+  const el=document.getElementById('inp-'+id);
+  el.value=''; el.classList.remove('invalid');
+  const err=document.getElementById('err-'+id.replace('inp-',''));
+  if(err) err.textContent='';
+  el.focus();
+  if(id==='inp-peso') updatePEPPPreview();
+}
+
+function clearAllFields(){
+  FIELDS.forEach(f=>{
+    const el=document.getElementById('inp-'+f.id);
+    el.value=''; el.classList.remove('invalid');
+    document.getElementById('err-'+f.id).textContent='';
+  });
+  document.getElementById('inp-fecha').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pepp-preview').innerHTML='';
+  cancelEdit();
+}
+
+function updatePEPPPreview(){
+  const records=loadRecords();
+  const raw=document.getElementById('inp-peso').value;
+  const pval=parseDecimal(raw);
+  const prev=document.getElementById('pepp-preview');
+  if(!pval||records.length===0){
+    prev.innerHTML=records.length===0?'<span style="font-size:13px;color:var(--muted)">Primer registro — PEPP desde el próximo control</span>':'';
+    return;
+  }
+  let base=records;
+  if(editingId){ const idx=records.findIndex(r=>r.id===editingId); base=records.slice(0,idx); }
+  if(base.length===0){prev.innerHTML='';return;}
+  const pepp=calcPEPP(base[base.length-1].peso,pval);
+  if(pepp===null){prev.innerHTML='';return;}
+  const col=pepp>0?'var(--good)':pepp<0?'var(--bad)':'var(--muted)';
+  const arr=pepp>0?'↓':pepp<0?'↑':'→';
+  const lbl=pepp>0?'perdido':'ganado';
+  prev.innerHTML=`<span style="color:${col}">${arr} ${Math.abs(pepp).toFixed(1)}% ${lbl} respecto al anterior</span>`;
+}
+
+function validateForm(){
+  let ok=true; const parsed={};
+  FIELDS.forEach(f=>{
+    const el=document.getElementById('inp-'+f.id);
+    const err=document.getElementById('err-'+f.id);
+    el.classList.remove('invalid'); err.textContent='';
+    const raw=el.value;
+    if(!raw||raw.trim()===''){
+      parsed[f.id]=null;
+      if(f.req){el.classList.add('invalid');err.textContent=`${f.label} es obligatorio`;ok=false;}
+      return;
     }
-    
-    return `
-      <div class="history-item">
-        <div class="history-dot">${records.length - i}</div>
-        <div class="history-info">
-          <div class="history-date">${date}</div>
-          <div class="history-weight">
-            ${r.peso} kg
-            ${r.perimetro ? ` · ${r.perimetro} cm` : ''}
-            ${r.grasa ? ` · ${r.grasa}% grasa` : ''}
-            ${r.bmi ? ` · BMI ${r.bmi}` : ''}
-          </div>
-        </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <div style="text-align:right">
-            <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">PEPP</div>
-            ${peppHtml}
-          </div>
+    const val=parseDecimal(raw);
+    if(val===null){el.classList.add('invalid');err.textContent='Valor inválido';ok=false;return;}
+    if(val<f.min||val>f.max){el.classList.add('invalid');err.textContent=`Fuera de rango (${f.min}–${f.max})`;ok=false;return;}
+    parsed[f.id]=val;
+  });
+  return ok?parsed:null;
+}
+
+function saveRecord(){
+  const fecha=document.getElementById('inp-fecha').value;
+  if(!fecha){showToast('⚠️ La fecha es obligatoria');return;}
+  const parsed=validateForm();
+  if(!parsed){showToast('⚠️ Corrige los errores');return;}
+  let records=loadRecords();
+  if(editingId){
+    const idx=records.findIndex(r=>r.id===editingId);
+    if(idx!==-1) records[idx]={...records[idx],fecha,...parsed};
+    cancelEdit();
+  } else {
+    records.push({id:Date.now(),fecha,...parsed,pepp:null});
+  }
+  records.sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  saveRecords(records); recalcAllPEPP();
+  showToast('✓ Registro guardado');
+  clearAllFields();
+  setTimeout(()=>goPage('dashboard',document.querySelector('.nav-btn')),800);
+}
+
+function cancelEdit(){
+  editingId=null;
+  document.getElementById('edit-banner').style.display='none';
+  document.getElementById('btn-save').textContent='Guardar Registro';
+}
+
+function editRecord(id){
+  const records=loadRecords();
+  const r=records.find(x=>x.id===id);
+  if(!r) return;
+  editingId=id;
+  goPage('registro',document.querySelectorAll('.nav-btn')[1]);
+  setTimeout(()=>{
+    document.getElementById('inp-fecha').value=r.fecha;
+    FIELDS.forEach(f=>{ document.getElementById('inp-'+f.id).value=r[f.id]!=null?String(r[f.id]):''; });
+    document.getElementById('edit-banner').style.display='block';
+    document.getElementById('btn-save').textContent='✓ Guardar Corrección';
+    updatePEPPPreview();
+  },50);
+}
+
+// ============================================================
+// HISTORIAL
+// ============================================================
+function deleteRecord(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  saveRecords(loadRecords().filter(r=>r.id!==id));
+  recalcAllPEPP(); renderHistorial(); showToast('Registro eliminado');
+}
+
+function renderHistorial(){
+  const records=loadRecords();
+  const container=document.getElementById('history-list');
+  if(records.length===0){
+    container.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Sin registros</div><div class="empty-desc">Agrega tu primer control desde Registro.</div></div>';
+    return;
+  }
+  const sorted=[...records].reverse();
+  container.innerHTML=`<div class="card card-pad">`+sorted.map((r,i)=>{
+    const pepp=r.pepp;
+    let ph='<span style="color:var(--muted);font-size:12px">—</span>';
+    if(pepp!=null){ const c=pepp>0?'var(--good)':'var(--bad)'; ph=`<span style="color:${c};font-size:14px;font-weight:700">${pepp>0?'↓':'↑'} ${Math.abs(pepp).toFixed(1)}%</span>`; }
+    return `<div class="history-item">
+      <div class="history-dot">${records.length-i}</div>
+      <div class="history-info">
+        <div class="history-date">${fmtDateLong(r.fecha)}</div>
+        <div class="history-detail">${r.peso} kg${r.perimetro?` · ${r.perimetro} cm`:''}${r.grasa?` · ${r.grasa}% grasa`:''}${r.bmi?` · BMI ${r.bmi}`:''}</div>
+      </div>
+      <div class="history-actions">
+        <div><div class="pepp-label">PEPP</div>${ph}</div>
+        <div class="btn-row">
           <button class="btn-edit" onclick="editRecord(${r.id})">✏️</button>
           <button class="btn-del" onclick="deleteRecord(${r.id})">✕</button>
         </div>
-      </div>`;
-  }).join('') + `</div>`;
+      </div>
+    </div>`;
+  }).join('')+`</div>`;
 }
 
-// ==============================
+// ============================================================
 // EXPORT
-// ==============================
-function exportData() {
-  const records = loadRecords();
-  const json = JSON.stringify(records, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `control-antropometrico-${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  showToast('Exportando datos...');
+// ============================================================
+function exportData(){
+  const blob=new Blob([JSON.stringify(loadRecords(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`control-${new Date().toISOString().split('T')[0]}.json`;
+  a.click(); showToast('Exportando...');
 }
 
-// ==============================
-// TOAST
-// ==============================
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ==============================
-// INIT
-// ==============================
-// Seed sample data if empty (from the PDF)
-function seedSampleData() {
-  const records = loadRecords();
-  if (records.length === 0) {
-    const sample = [
-      { id: 1, fecha: '2026-01-21', peso: 88.7, perimetro: 109.0, grasa: 32.4, muscular: 29.8, visceral: 18, bmi: 31.8, rm: null, pepp: null },
-      { id: 2, fecha: '2026-02-11', peso: 87.3, perimetro: 107.0, grasa: 31.3, muscular: 30.4, visceral: 18, bmi: 31.3, rm: null, pepp: null },
+// ============================================================
+// SEED SAMPLE DATA & INIT
+// ============================================================
+function seedIfEmpty(){
+  if(loadRecords().length===0){
+    const sample=[
+      {id:1,fecha:'2026-01-21',peso:88.7,perimetro:109,grasa:32.4,muscular:29.8,visceral:18,bmi:31.8,rm:null,pepp:null},
+      {id:2,fecha:'2026-02-11',peso:87.3,perimetro:107,grasa:31.3,muscular:30.4,visceral:18,bmi:31.3,rm:null,pepp:null},
     ];
-    saveRecords(sample);
-    recalcAllPEPP();
+    saveRecords(sample); recalcAllPEPP();
   }
 }
 
-// Service worker registration
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 
-// Set today's date on form
-const todayStr = new Date().toISOString().split('T')[0];
-document.getElementById('inp-fecha').value = todayStr;
-
-seedSampleData();
+seedIfEmpty();
+document.getElementById('inp-fecha').value=new Date().toISOString().split('T')[0];
+setupForm();
 renderDashboard();
 </script>
 </body>
