@@ -275,6 +275,15 @@
     font-size: 12px;
     cursor: pointer;
   }
+  .btn-edit {
+    background: rgba(0,212,170,0.1);
+    border: 1px solid rgba(0,212,170,0.3);
+    border-radius: 8px;
+    color: var(--accent);
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
 
   /* FORM */
   .form-header {
@@ -301,12 +310,12 @@
     margin-left: 6px;
   }
   input[type="date"],
-  input[type="number"] {
+  input[type="text"] {
     width: 100%;
     background: var(--bg3);
     border: 1.5px solid rgba(0,212,170,0.2);
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 14px 44px 14px 16px;
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
     font-size: 16px;
@@ -315,7 +324,57 @@
     -webkit-appearance: none;
   }
   input:focus { border-color: var(--accent); }
+  input.inp-invalid { border-color: var(--bad) !important; }
   input::placeholder { color: var(--muted); }
+
+  .inp-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .inp-wrap input { flex: 1; }
+  .inp-clear {
+    position: absolute;
+    right: 12px;
+    background: rgba(106,143,168,0.15);
+    border: none;
+    border-radius: 50%;
+    width: 24px; height: 24px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .inp-clear:active { background: rgba(255,107,107,0.3); color: var(--bad); }
+
+  .inp-error {
+    font-size: 11px;
+    color: var(--bad);
+    margin-top: 4px;
+    min-height: 14px;
+    padding-left: 4px;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid rgba(106,143,168,0.3);
+    border-radius: 14px;
+    padding: 14px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-secondary:active { border-color: var(--bad); color: var(--bad); }
   
   .form-grid {
     display: grid;
@@ -517,6 +576,57 @@
   .info-label { color: var(--muted); }
   .info-val { font-weight: 600; }
 
+  /* CHART FIXED CONTAINERS */
+  .chart-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+    gap: 10px;
+  }
+  .chart-toggle-btn {
+    flex-shrink: 0;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(106,143,168,0.15);
+    border: 1px solid rgba(106,143,168,0.25);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    margin-top: 2px;
+  }
+  .chart-toggle-btn:active { background: rgba(0,212,170,0.2); color: var(--accent); }
+  .chart-toggle-btn.closed {
+    background: rgba(0,212,170,0.1);
+    border-color: rgba(0,212,170,0.3);
+    color: var(--accent);
+    font-size: 14px;
+  }
+
+  .canvas-box {
+    position: relative;
+    width: 100%;
+    height: 220px;
+  }
+  .canvas-box-radar {
+    height: 280px;
+  }
+  .canvas-box canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .chart-body-collapsed {
+    display: none;
+  }
+
   /* DELTA CHART POSITIVE/NEGATIVE ANNOTATION */
   .delta-axis-zero {
     border-top: 1px dashed rgba(255,255,255,0.15);
@@ -552,54 +662,81 @@
   </div>
 
   <!-- Chart section: Evolución -->
-  <div class="section">
+  <div class="section" id="section-evolucion">
     <div class="card">
       <div class="chart-wrap">
-        <div class="chart-title">Evolución del Parámetro</div>
-        <div class="chart-sub">Tendencia histórica — toca un punto para ver detalle</div>
-        <div class="tabs" id="chart-tabs">
-          <button class="tab-btn active" onclick="switchChart('weight')">Peso</button>
-          <button class="tab-btn" onclick="switchChart('grasa')">Grasa</button>
-          <button class="tab-btn" onclick="switchChart('muscular')">Músculo</button>
-          <button class="tab-btn" onclick="switchChart('visceral')">Visceral</button>
-          <button class="tab-btn" onclick="switchChart('bmi')">BMI</button>
+        <div class="chart-header-row">
+          <div>
+            <div class="chart-title">📈 Evolución del Parámetro</div>
+            <div class="chart-sub">Tendencia histórica — toca un punto para detalles</div>
+          </div>
+          <button class="chart-toggle-btn" id="toggle-evolucion" onclick="toggleChart('evolucion')" title="Cerrar gráfica">✕</button>
         </div>
-        <canvas id="mainChart" height="200"></canvas>
+        <div id="body-evolucion">
+          <div class="tabs" id="chart-tabs">
+            <button class="tab-btn active" onclick="switchChart('weight')">Peso</button>
+            <button class="tab-btn" onclick="switchChart('grasa')">Grasa</button>
+            <button class="tab-btn" onclick="switchChart('muscular')">Músculo</button>
+            <button class="tab-btn" onclick="switchChart('visceral')">Visceral</button>
+            <button class="tab-btn" onclick="switchChart('bmi')">BMI</button>
+          </div>
+          <div class="canvas-box">
+            <canvas id="mainChart"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Chart: Cambio entre controles (barras sube/baja) -->
-  <div class="section">
+  <div class="section" id="section-cambios">
     <div class="card">
       <div class="chart-wrap">
-        <div class="chart-title">📊 Cambio entre Controles</div>
-        <div class="chart-sub">Verde = bajó · Rojo = subió · por control</div>
-        <div class="tabs" id="delta-tabs">
-          <button class="tab-btn active" onclick="switchDelta('peso')">Peso</button>
-          <button class="tab-btn" onclick="switchDelta('grasa')">Grasa</button>
-          <button class="tab-btn" onclick="switchDelta('muscular')">Músculo</button>
-          <button class="tab-btn" onclick="switchDelta('visceral')">Visceral</button>
-          <button class="tab-btn" onclick="switchDelta('perimetro')">Perím.</button>
+        <div class="chart-header-row">
+          <div>
+            <div class="chart-title">📊 Cambio entre Controles</div>
+            <div class="chart-sub">Verde = mejoró · Rojo = empeoró · por control</div>
+          </div>
+          <button class="chart-toggle-btn" id="toggle-cambios" onclick="toggleChart('cambios')" title="Cerrar gráfica">✕</button>
         </div>
-        <canvas id="deltaChart" height="200"></canvas>
+        <div id="body-cambios">
+          <div class="tabs" id="delta-tabs">
+            <button class="tab-btn active" onclick="switchDelta('peso')">Peso</button>
+            <button class="tab-btn" onclick="switchDelta('grasa')">Grasa</button>
+            <button class="tab-btn" onclick="switchDelta('muscular')">Músculo</button>
+            <button class="tab-btn" onclick="switchDelta('visceral')">Visceral</button>
+            <button class="tab-btn" onclick="switchDelta('perimetro')">Perím.</button>
+          </div>
+          <div class="canvas-box">
+            <canvas id="deltaChart"></canvas>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Chart: Radar vs rangos óptimos -->
-  <div class="section" style="margin-bottom:24px;">
+  <div class="section" style="margin-bottom:24px;" id="section-radar">
     <div class="card">
       <div class="chart-wrap">
-        <div class="chart-title">🎯 Perfil vs Valores Óptimos</div>
-        <div class="chart-sub">Cuánto te acercas a cada rango ideal (último control)</div>
-        <canvas id="radarChart" height="260"></canvas>
-        <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-            <div style="width:12px;height:3px;background:#00d4aa;border-radius:2px"></div> Tu perfil
+        <div class="chart-header-row">
+          <div>
+            <div class="chart-title">🎯 Perfil vs Valores Óptimos</div>
+            <div class="chart-sub">Qué tan cerca estás del rango ideal</div>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-            <div style="width:12px;height:3px;background:rgba(255,255,255,0.2);border-radius:2px"></div> Zona óptima
+          <button class="chart-toggle-btn" id="toggle-radar" onclick="toggleChart('radar')" title="Cerrar gráfica">✕</button>
+        </div>
+        <div id="body-radar">
+          <div class="canvas-box canvas-box-radar">
+            <canvas id="radarChart"></canvas>
+          </div>
+          <div style="display:flex;gap:16px;justify-content:center;margin-top:12px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+              <div style="width:12px;height:3px;background:#00d4aa;border-radius:2px"></div> Tu perfil
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+              <div style="width:12px;height:3px;background:rgba(255,255,255,0.2);border-radius:2px"></div> Zona óptima
+            </div>
           </div>
         </div>
       </div>
@@ -615,42 +752,84 @@
   </div>
   <div class="form-body">
     <div class="card card-pad">
+
+      <!-- Aviso de edición de registro -->
+      <div id="edit-banner" style="display:none; background:rgba(255,209,102,0.1); border:1px solid rgba(255,209,102,0.3); border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:12px; color:var(--warn);">
+        ✏️ <strong>Modo edición</strong> — Estás corrigiendo un registro existente.
+        <span style="float:right; cursor:pointer; color:var(--muted);" onclick="cancelEdit()">✕ Cancelar</span>
+      </div>
+
       <div class="form-group">
         <label>Fecha del control</label>
-        <input type="date" id="inp-fecha">
+        <div class="inp-wrap">
+          <input type="date" id="inp-fecha">
+          <button class="inp-clear" onclick="clearField('inp-fecha')" title="Borrar">✕</button>
+        </div>
       </div>
+
       <div class="form-group">
-        <label>Peso Corporal <span class="label-hint">kg</span></label>
-        <input type="number" id="inp-peso" placeholder="ej. 87.3" step="0.1" min="30" max="300">
+        <label>Peso Corporal <span class="label-hint">kg — usa , o .</span></label>
+        <div class="inp-wrap">
+          <input type="text" inputmode="decimal" id="inp-peso" placeholder="ej. 87.3 o 87,3" autocomplete="off">
+          <button class="inp-clear" onclick="clearField('inp-peso')" title="Borrar">✕</button>
+        </div>
+        <div class="inp-error" id="err-peso"></div>
       </div>
+
       <div class="form-grid">
         <div class="form-group">
           <label>Per. Abdominal <span class="label-hint">cm</span></label>
-          <input type="number" id="inp-perimetro" placeholder="ej. 107" step="0.1">
+          <div class="inp-wrap">
+            <input type="text" inputmode="decimal" id="inp-perimetro" placeholder="ej. 107" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-perimetro')" title="Borrar">✕</button>
+          </div>
+          <div class="inp-error" id="err-perimetro"></div>
         </div>
         <div class="form-group">
           <label>BMI <span class="label-hint">kg/m²</span></label>
-          <input type="number" id="inp-bmi" placeholder="ej. 31.3" step="0.1">
+          <div class="inp-wrap">
+            <input type="text" inputmode="decimal" id="inp-bmi" placeholder="ej. 31.3" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-bmi')" title="Borrar">✕</button>
+          </div>
+          <div class="inp-error" id="err-bmi"></div>
         </div>
       </div>
+
       <div class="form-grid">
         <div class="form-group">
           <label>Masa Grasa <span class="label-hint">%</span></label>
-          <input type="number" id="inp-grasa" placeholder="ej. 31.3" step="0.1">
+          <div class="inp-wrap">
+            <input type="text" inputmode="decimal" id="inp-grasa" placeholder="ej. 31,3" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-grasa')" title="Borrar">✕</button>
+          </div>
+          <div class="inp-error" id="err-grasa"></div>
         </div>
         <div class="form-group">
           <label>Masa Muscular <span class="label-hint">%</span></label>
-          <input type="number" id="inp-muscular" placeholder="ej. 30.4" step="0.1">
+          <div class="inp-wrap">
+            <input type="text" inputmode="decimal" id="inp-muscular" placeholder="ej. 30,4" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-muscular')" title="Borrar">✕</button>
+          </div>
+          <div class="inp-error" id="err-muscular"></div>
         </div>
       </div>
+
       <div class="form-grid">
         <div class="form-group">
           <label>Grasa Visceral <span class="label-hint">nivel</span></label>
-          <input type="number" id="inp-visceral" placeholder="ej. 18" step="1">
+          <div class="inp-wrap">
+            <input type="text" inputmode="decimal" id="inp-visceral" placeholder="ej. 18" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-visceral')" title="Borrar">✕</button>
+          </div>
+          <div class="inp-error" id="err-visceral"></div>
         </div>
         <div class="form-group">
           <label>RM <span class="label-hint">opcional</span></label>
-          <input type="number" id="inp-rm" placeholder="ej. 94.0" step="0.1">
+          <div class="inp-wrap">
+            <input type="text" inputmode="decimal" id="inp-rm" placeholder="ej. 94.0" autocomplete="off">
+            <button class="inp-clear" onclick="clearField('inp-rm')" title="Borrar">✕</button>
+          </div>
+          <div class="inp-error" id="err-rm"></div>
         </div>
       </div>
 
@@ -662,7 +841,8 @@
         <div id="pepp-preview" style="margin-top:10px; font-family:'DM Serif Display',serif; font-size:22px; color:var(--text);"></div>
       </div>
 
-      <button class="btn-primary" onclick="saveRecord()">Guardar Registro</button>
+      <button class="btn-primary" id="btn-save" onclick="saveRecord()">Guardar Registro</button>
+      <button class="btn-secondary" id="btn-clear-all" onclick="clearAllFields()" type="button">🗑 Limpiar todo el formulario</button>
     </div>
   </div>
 </div>
@@ -890,6 +1070,137 @@ function statusLabel(s) {
 }
 
 // ==============================
+// FORM HELPERS
+// ==============================
+
+// Numeric fields that accept decimals
+const DECIMAL_FIELDS = ['inp-peso','inp-perimetro','inp-bmi','inp-grasa','inp-muscular','inp-visceral','inp-rm'];
+
+// Convert string with , or . to float, return null if invalid
+function parseDecimal(str) {
+  if (!str || str.trim() === '') return null;
+  // Replace comma with dot
+  const normalized = str.trim().replace(',', '.');
+  // Must match a valid number pattern: optional sign, digits, optional decimal
+  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return null;
+  const val = parseFloat(normalized);
+  return isNaN(val) ? null : val;
+}
+
+function clearField(id) {
+  const inp = document.getElementById(id);
+  inp.value = '';
+  inp.classList.remove('inp-invalid');
+  const err = document.getElementById('err-' + id.replace('inp-',''));
+  if (err) err.textContent = '';
+  inp.focus();
+  if (id === 'inp-peso') updatePEPPPreview();
+}
+
+function clearAllFields() {
+  DECIMAL_FIELDS.forEach(id => clearField(id));
+  // Reset date to today
+  document.getElementById('inp-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('pepp-preview').innerHTML = '';
+  // Clear all errors
+  document.querySelectorAll('.inp-error').forEach(e => e.textContent = '');
+  document.querySelectorAll('input').forEach(i => i.classList.remove('inp-invalid'));
+  cancelEdit();
+}
+
+function showFieldError(fieldSuffix, msg) {
+  const err = document.getElementById('err-' + fieldSuffix);
+  const inp = document.getElementById('inp-' + fieldSuffix);
+  if (err) err.textContent = msg;
+  if (inp) inp.classList.add('inp-invalid');
+}
+
+function clearFieldError(fieldSuffix) {
+  const err = document.getElementById('err-' + fieldSuffix);
+  const inp = document.getElementById('inp-' + fieldSuffix);
+  if (err) err.textContent = '';
+  if (inp) inp.classList.remove('inp-invalid');
+}
+
+// Validate all fields, return object with parsed values or null on hard error
+function validateForm() {
+  let valid = true;
+  const parsed = {};
+
+  // Validate each decimal field
+  const fieldMap = [
+    { id:'peso',      label:'Peso',             required:true,  min:20,   max:400 },
+    { id:'perimetro', label:'Per. Abdominal',   required:false, min:40,   max:300 },
+    { id:'bmi',       label:'BMI',              required:false, min:10,   max:80  },
+    { id:'grasa',     label:'Masa Grasa',       required:false, min:0,    max:70  },
+    { id:'muscular',  label:'Masa Muscular',    required:false, min:0,    max:70  },
+    { id:'visceral',  label:'Grasa Visceral',   required:false, min:0,    max:60  },
+    { id:'rm',        label:'RM',               required:false, min:0,    max:500 },
+  ];
+
+  fieldMap.forEach(f => {
+    clearFieldError(f.id);
+    const raw = document.getElementById('inp-' + f.id).value;
+    if (!raw || raw.trim() === '') {
+      parsed[f.id] = null;
+      if (f.required) {
+        showFieldError(f.id, `${f.label} es obligatorio`);
+        valid = false;
+      }
+      return;
+    }
+    const val = parseDecimal(raw);
+    if (val === null) {
+      showFieldError(f.id, `Valor inválido — usa números con , o .`);
+      valid = false;
+      return;
+    }
+    if (val < f.min || val > f.max) {
+      showFieldError(f.id, `Fuera de rango esperado (${f.min}–${f.max})`);
+      valid = false;
+      return;
+    }
+    parsed[f.id] = val;
+  });
+
+  return valid ? parsed : null;
+}
+
+// ==============================
+// EDIT MODE
+// ==============================
+let editingId = null;
+
+function cancelEdit() {
+  editingId = null;
+  document.getElementById('edit-banner').style.display = 'none';
+  document.getElementById('btn-save').textContent = 'Guardar Registro';
+}
+
+function editRecord(id) {
+  const records = loadRecords();
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+
+  editingId = id;
+  goPage('registro', document.querySelectorAll('.nav-btn')[1]);
+
+  setTimeout(() => {
+    document.getElementById('inp-fecha').value = r.fecha;
+    document.getElementById('inp-peso').value = r.peso !== null ? String(r.peso).replace('.', ',') : '';
+    document.getElementById('inp-perimetro').value = r.perimetro !== null ? String(r.perimetro).replace('.', ',') : '';
+    document.getElementById('inp-bmi').value = r.bmi !== null ? String(r.bmi).replace('.', ',') : '';
+    document.getElementById('inp-grasa').value = r.grasa !== null ? String(r.grasa).replace('.', ',') : '';
+    document.getElementById('inp-muscular').value = r.muscular !== null ? String(r.muscular).replace('.', ',') : '';
+    document.getElementById('inp-visceral').value = r.visceral !== null ? String(r.visceral).replace('.', ',') : '';
+    document.getElementById('inp-rm').value = r.rm !== null ? String(r.rm).replace('.', ',') : '';
+    document.getElementById('edit-banner').style.display = 'block';
+    document.getElementById('btn-save').textContent = '✓ Guardar Corrección';
+    updatePEPPPreview();
+  }, 50);
+}
+
+// ==============================
 // NAVIGATION
 // ==============================
 function goPage(name, btn) {
@@ -897,7 +1208,7 @@ function goPage(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   if (btn) btn.classList.add('active');
-  
+
   if (name === 'dashboard') renderDashboard();
   if (name === 'historial') renderHistorial();
   if (name === 'registro') setupForm();
@@ -907,83 +1218,102 @@ function goPage(name, btn) {
 // FORM
 // ==============================
 function setupForm() {
+  if (editingId) return; // Don't reset if editing
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('inp-fecha').value = today;
-  
-  // Update PEPP preview when peso changes
-  document.getElementById('inp-peso').addEventListener('input', updatePEPPPreview);
+
+  // Live validation on blur + PEPP preview on peso input
+  DECIMAL_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    // Remove old listeners by cloning
+    const newEl = el.cloneNode(true);
+    el.parentNode.replaceChild(newEl, el);
+    newEl.addEventListener('blur', () => {
+      const raw = newEl.value;
+      if (!raw || raw.trim() === '') { newEl.classList.remove('inp-invalid'); return; }
+      const val = parseDecimal(raw);
+      if (val === null) {
+        newEl.classList.add('inp-invalid');
+        const suffix = id.replace('inp-','');
+        showFieldError(suffix, 'Valor inválido — usa , o . para decimales');
+      } else {
+        newEl.classList.remove('inp-invalid');
+        const suffix = id.replace('inp-','');
+        clearFieldError(suffix);
+        // Normalize: replace comma with dot in display
+        newEl.value = String(val);
+      }
+      if (id === 'inp-peso') updatePEPPPreview();
+    });
+    newEl.addEventListener('input', () => {
+      if (id === 'inp-peso') updatePEPPPreview();
+    });
+  });
 }
 
 function updatePEPPPreview() {
   const records = loadRecords();
-  const pesoInput = parseFloat(document.getElementById('inp-peso').value);
+  const raw = document.getElementById('inp-peso').value;
+  const pesoInput = parseDecimal(raw);
   const preview = document.getElementById('pepp-preview');
-  
+
   if (!pesoInput || records.length === 0) {
-    preview.innerHTML = records.length === 0 
+    preview.innerHTML = records.length === 0
       ? '<span style="font-size:13px;color:var(--muted)">Primer registro — PEPP se calculará desde el próximo control</span>'
       : '';
     return;
   }
-  
-  const lastPeso = records[records.length - 1].peso;
+
+  // If editing, compare against the record before the edited one
+  let baseRecords = records;
+  if (editingId) {
+    const idx = records.findIndex(r => r.id === editingId);
+    baseRecords = records.slice(0, idx);
+  }
+  if (baseRecords.length === 0) { preview.innerHTML = ''; return; }
+
+  const lastPeso = baseRecords[baseRecords.length - 1].peso;
   const pepp = calcPEPPBetween(lastPeso, pesoInput);
-  
+
   if (pepp === null) return;
-  
+
   const color = pepp > 0 ? 'var(--good)' : pepp < 0 ? 'var(--bad)' : 'var(--muted)';
   const arrow = pepp > 0 ? '↓' : pepp < 0 ? '↑' : '→';
   const label = pepp > 0 ? 'perdido respecto al control anterior' : pepp < 0 ? 'ganado respecto al control anterior' : 'sin cambio';
-  
+
   preview.innerHTML = `<span style="color:${color}">${arrow} ${Math.abs(pepp).toFixed(1)}% ${label}</span>`;
 }
 
 function saveRecord() {
   const fecha = document.getElementById('inp-fecha').value;
-  const peso = parseFloat(document.getElementById('inp-peso').value);
-  
-  if (!fecha || !peso) {
-    showToast('⚠️ Fecha y peso son obligatorios');
+  if (!fecha) { showToast('⚠️ La fecha es obligatoria'); return; }
+
+  const parsed = validateForm();
+  if (!parsed) {
+    showToast('⚠️ Corrige los errores del formulario');
     return;
   }
-  
-  const records = loadRecords();
-  
-  const record = {
-    id: Date.now(),
-    fecha,
-    peso,
-    perimetro: parseFloat(document.getElementById('inp-perimetro').value) || null,
-    bmi: parseFloat(document.getElementById('inp-bmi').value) || null,
-    grasa: parseFloat(document.getElementById('inp-grasa').value) || null,
-    muscular: parseFloat(document.getElementById('inp-muscular').value) || null,
-    visceral: parseFloat(document.getElementById('inp-visceral').value) || null,
-    rm: parseFloat(document.getElementById('inp-rm').value) || null,
-  };
-  
-  // Calculate PEPP
-  if (records.length > 0) {
-    const lastPeso = records[records.length - 1].peso;
-    record.pepp = calcPEPPBetween(lastPeso, peso);
+
+  let records = loadRecords();
+
+  if (editingId) {
+    // Update existing record
+    const idx = records.findIndex(r => r.id === editingId);
+    if (idx !== -1) {
+      records[idx] = { ...records[idx], fecha, ...parsed };
+    }
+    cancelEdit();
   } else {
-    record.pepp = null;
+    const record = { id: Date.now(), fecha, ...parsed, pepp: null };
+    records.push(record);
   }
-  
-  records.push(record);
-  // Sort by date
+
   records.sort((a, b) => a.fecha.localeCompare(b.fecha));
   saveRecords(records);
-  
-  // Recalculate all PEPPs
   recalcAllPEPP();
-  
+
   showToast('✓ Registro guardado');
-  
-  // Clear form
-  ['inp-peso','inp-perimetro','inp-bmi','inp-grasa','inp-muscular','inp-visceral','inp-rm']
-    .forEach(id => document.getElementById(id).value = '');
-  document.getElementById('pepp-preview').innerHTML = '';
-  
+  clearAllFields();
   setTimeout(() => goPage('dashboard', document.querySelector('.nav-btn')), 800);
 }
 
@@ -1162,10 +1492,11 @@ function renderChart(records, type) {
 
   if (mainChartInstance) { mainChartInstance.destroy(); mainChartInstance = null; }
 
-  const ctx = document.getElementById('mainChart').getContext('2d');
+  const canvas = document.getElementById('mainChart');
+  const ctx = canvas.getContext('2d');
 
   // Gradient fill
-  const grad = ctx.createLinearGradient(0, 0, 0, 200);
+  const grad = ctx.createLinearGradient(0, 0, 0, 220);
   grad.addColorStop(0, color + '40');
   grad.addColorStop(1, color + '00');
 
@@ -1223,6 +1554,7 @@ function renderChart(records, type) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { duration: 400 },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1250,8 +1582,14 @@ function renderChart(records, type) {
         }
       },
       scales: {
-        x: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#6a8fa8', font:{ size:10 } } },
-        y: { grid: { color:'rgba(255,255,255,0.04)' }, ticks: { color:'#6a8fa8', font:{ size:10 } } }
+        x: {
+          grid: { color:'rgba(255,255,255,0.04)' },
+          ticks: { color:'#6a8fa8', font:{ size:10 }, maxRotation: 0 }
+        },
+        y: {
+          grid: { color:'rgba(255,255,255,0.04)' },
+          ticks: { color:'#6a8fa8', font:{ size:10 } }
+        }
       },
       interaction: { intersect:false, mode:'index' },
     }
@@ -1326,6 +1664,7 @@ function renderDeltaChart(records, field) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { duration: 400 },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1349,10 +1688,10 @@ function renderDeltaChart(records, field) {
       scales: {
         x: {
           grid: { color:'rgba(255,255,255,0.04)' },
-          ticks: { color:'#6a8fa8', font:{ size:10 } }
+          ticks: { color:'#6a8fa8', font:{ size:10 }, maxRotation: 0 }
         },
         y: {
-          grid: { color:'rgba(255,255,255,0.05)', drawBorder:false },
+          grid: { color:'rgba(255,255,255,0.05)' },
           ticks: { color:'#6a8fa8', font:{ size:10 } },
           border: { dash:[4,4] },
         }
@@ -1369,6 +1708,38 @@ function renderDeltaChart(records, field) {
 function switchDelta(field) {
   currentDeltaType = field;
   renderDeltaChart(loadRecords(), field);
+}
+
+// ==============================
+// TOGGLE CHARTS OPEN / CLOSE
+// ==============================
+const chartOpenState = { evolucion: true, cambios: true, radar: true };
+
+function toggleChart(name) {
+  const body = document.getElementById('body-' + name);
+  const btn  = document.getElementById('toggle-' + name);
+  chartOpenState[name] = !chartOpenState[name];
+
+  if (chartOpenState[name]) {
+    // Open
+    body.classList.remove('chart-body-collapsed');
+    btn.textContent = '✕';
+    btn.classList.remove('closed');
+    btn.title = 'Cerrar gráfica';
+    // Re-render the relevant chart after layout settles
+    setTimeout(() => {
+      const records = loadRecords();
+      if (name === 'evolucion') renderChart(records, currentChartType);
+      if (name === 'cambios')   renderDeltaChart(records, currentDeltaType);
+      if (name === 'radar')     renderRadarChart(records);
+    }, 50);
+  } else {
+    // Close
+    body.classList.add('chart-body-collapsed');
+    btn.textContent = '▼';
+    btn.classList.add('closed');
+    btn.title = 'Abrir gráfica';
+  }
 }
 
 // ==============================
@@ -1447,6 +1818,7 @@ function renderRadarChart(records) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { duration: 400 },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -1532,6 +1904,7 @@ function renderHistorial() {
             <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">PEPP</div>
             ${peppHtml}
           </div>
+          <button class="btn-edit" onclick="editRecord(${r.id})">✏️</button>
           <button class="btn-del" onclick="deleteRecord(${r.id})">✕</button>
         </div>
       </div>`;
