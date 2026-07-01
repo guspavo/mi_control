@@ -392,7 +392,20 @@ input[type="date"]:focus{border-color:var(--accent)}
     <div class="card card-pad" style="margin-bottom:16px">
       <div style="font-size:16px;font-weight:700;margin-bottom:4px">💾 Datos y respaldo</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Los datos se guardan localmente en tu iPhone. No se borran al actualizar la app. Exporta periódicamente como respaldo.</div>
-      <button class="btn-primary" onclick="exportData()" style="margin-top:0">Exportar datos (JSON)</button>
+      <button class="btn-primary" onclick="exportData()" style="margin-top:0">📤 Exportar datos (JSON)</button>
+    </div>
+    <div class="card card-pad" style="margin-bottom:24px;border-color:rgba(255,107,107,0.3)">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;color:var(--bad)">🗑 Reiniciar datos</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Borra <strong style="color:var(--text)">todos</strong> los registros y comienza desde cero. Esta acción no se puede deshacer. Se recomienda exportar un respaldo antes.</div>
+      <div id="reset-confirm-box" style="display:none;background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.3);border-radius:12px;padding:14px;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;color:var(--bad);margin-bottom:6px">⚠️ ¿Estás seguro?</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Se eliminarán <strong id="reset-count" style="color:var(--text)">0</strong> registros de forma permanente.</div>
+        <div style="display:flex;gap:10px">
+          <button onclick="cancelReset()" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer">Cancelar</button>
+          <button onclick="confirmReset()" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--bad);color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer">Sí, borrar todo</button>
+        </div>
+      </div>
+      <button id="reset-btn" class="btn-primary" onclick="requestReset()" style="margin-top:0;background:linear-gradient(135deg,#ff6b6b,#cc3333)">🗑 Reiniciar todos los datos</button>
     </div>
   </div>
 </div>
@@ -1055,16 +1068,33 @@ function exportData(){
 }
 
 // ============================================================
+// RESET DATA
+// ============================================================
+function requestReset(){
+  const n = loadRecords().length;
+  document.getElementById('reset-count').textContent = n;
+  document.getElementById('reset-confirm-box').style.display = 'block';
+  document.getElementById('reset-btn').style.display = 'none';
+}
+
+function cancelReset(){
+  document.getElementById('reset-confirm-box').style.display = 'none';
+  document.getElementById('reset-btn').style.display = 'block';
+}
+
+function confirmReset(){
+  saveRecords([]);
+  document.getElementById('reset-confirm-box').style.display = 'none';
+  document.getElementById('reset-btn').style.display = 'block';
+  showToast('✓ Datos eliminados. Comienza tu primer registro.');
+  goPage('dashboard', document.querySelector('.nav-btn'));
+}
+
+// ============================================================
 // SEED SAMPLE DATA & INIT
 // ============================================================
 function seedIfEmpty(){
-  if(loadRecords().length===0){
-    const sample=[
-      {id:1,fecha:'2026-01-21',peso:88.7,perimetro:109,grasa:32.4,muscular:29.8,visceral:18,bmi:31.8,rm:null,pepp:null},
-      {id:2,fecha:'2026-02-11',peso:87.3,perimetro:107,grasa:31.3,muscular:30.4,visceral:18,bmi:31.3,rm:null,pepp:null},
-    ];
-    saveRecords(sample); recalcAllPEPP();
-  }
+  // Sin datos de muestra — la app comienza vacía en el primer uso.
 }
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
