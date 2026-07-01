@@ -2,14 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mi Control">
 <meta name="theme-color" content="#0a1628">
 <title>Control Antropométrico</title>
 <link rel="manifest" href="manifest.json">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<script src="chart.umd.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';"></script>
 <style>
 :root {
   --bg:#060d1a; --bg2:#0d1f35; --bg3:#132840;
@@ -79,6 +83,12 @@ nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,13,26,.97);backdrop
 .chart-canvas-wrap{padding:14px 16px 16px;height:230px;position:relative}
 .chart-canvas-wrap.radar-wrap{height:270px}
 .chart-canvas-wrap canvas{display:block;width:100%!important;height:100%!important}
+.hist-stats-row{display:flex;gap:8px;padding:14px 16px 0;flex-wrap:wrap}
+.hist-stat{flex:1;min-width:90px;background:rgba(106,143,168,.08);border:1px solid var(--border);border-radius:12px;padding:10px 12px}
+.hist-stat .hl{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.hist-stat .hv{font-size:18px;font-weight:700;color:var(--text);margin-top:2px}
+.hist-stat .hv.good{color:var(--good)}
+.hist-stat .hv.bad{color:var(--bad)}
 
 /* OPTIMAL */
 .optimal-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
@@ -333,6 +343,21 @@ input[type="date"]:focus{border-color:var(--accent)}
     <div class="header-sub">Todos los registros</div>
     <h1>Historial</h1>
   </div>
+
+  <!-- TENDENCIA DE PESO -->
+  <div class="chart-card" id="cc-historial-peso">
+    <div class="chart-head">
+      <div class="chart-head-text">
+        <div class="ct">⚖️ Tendencia de Peso</div>
+        <div class="cs">Seguimiento completo del control de peso</div>
+      </div>
+    </div>
+    <div id="historial-peso-stats" class="hist-stats-row"></div>
+    <div class="chart-canvas-wrap">
+      <canvas id="historialPesoChart"></canvas>
+    </div>
+  </div>
+
   <div class="section">
     <div id="history-list"></div>
   </div>
@@ -453,7 +478,7 @@ function goPage(name,btn){
   document.getElementById('page-'+name).classList.add('active');
   if(btn) btn.classList.add('active');
   if(name==='dashboard') renderDashboard();
-  if(name==='historial') renderHistorial();
+  if(name==='historial'){ renderHistorial(); requestAnimationFrame(()=>requestAnimationFrame(()=>renderHistorialChart(loadRecords()))); setTimeout(resizeAllCharts,400); }
   if(name==='registro'&&!editingId){ setupForm(); }
 }
 
@@ -482,12 +507,16 @@ function renderDashboard(){
   renderPEPP(latest,prev);
   renderStats(latest,prev);
   renderOptimal(latest);
-  // Charts rendered after small delay so DOM is settled
-  requestAnimationFrame(()=>{
+  // Charts rendered after layout settles. iOS Safari necesita un doble
+  // rAF (a veces incluso eso no basta tras una transición), por lo que
+  // sumamos un fallback con setTimeout + resize de seguridad.
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
     renderMainChart(records, currentChartType);
     renderDeltaChart(records, currentDeltaType);
     renderRadarChart(records);
-  });
+    renderHistorialChart(records);
+  }));
+  setTimeout(resizeAllCharts, 400);
 }
 
 function renderPEPP(latest,prev){
@@ -543,7 +572,7 @@ function renderOptimal(latest){
 // ============================================================
 // CHARTS
 // ============================================================
-let chartInst = { main:null, delta:null, radar:null };
+let chartInst = { main:null, delta:null, radar:null, historial:null };
 let currentChartType = 'weight';
 let currentDeltaType = 'peso';
 const chartOpen = { evolucion:true, cambios:true, radar:true };
@@ -555,6 +584,18 @@ const CHART_CFG = {
   visceral: {field:'visceral', color:'#a78bfa',label:'Grasa Visceral',   hb:true,          rhi:9   },
   bmi:      {field:'bmi',      color:'#38bdf8',label:'BMI (kg/m²)',      hb:true, rlo:18.5,rhi:24.9},
 };
+
+// iOS Safari a veces mide canvas con alto 0 justo después de un cambio
+// de pestaña o de una transición CSS (max-height). Forzamos un resize
+// de todas las instancias activas en varios momentos clave para
+// garantizar que el gráfico se vea sin necesidad de recargar la app.
+function resizeAllCharts(){
+  Object.values(chartInst).forEach(c=>{ if(c){ try{ c.resize(); }catch(e){} } });
+}
+window.addEventListener('resize', resizeAllCharts);
+window.addEventListener('orientationchange', ()=>setTimeout(resizeAllCharts,300));
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) setTimeout(resizeAllCharts,150); });
+window.addEventListener('pageshow', ()=>setTimeout(resizeAllCharts,150)); // back-forward cache de Safari
 
 function renderMainChart(records, type){
   const cfg = CHART_CFG[type]||CHART_CFG.weight;
@@ -608,6 +649,79 @@ function renderMainChart(records, type){
               if(type==='weight'&&r.pepp!=null) lines.push(`PEPP: ${r.pepp>0?'↓':'↑'}${Math.abs(r.pepp).toFixed(1)}%`);
               if(idx>0&&data[idx]!=null&&data[idx-1]!=null){ const d=(data[idx]-data[idx-1]).toFixed(1); lines.push(`Cambio: ${d>0?'+':''}${d}`); }
               return lines;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6a8fa8',font:{size:10},maxRotation:0,maxTicksLimit:6}},
+        y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6a8fa8',font:{size:10}}}
+      },
+      interaction:{intersect:false,mode:'index'},
+    }
+  });
+}
+
+function renderHistorialChart(records){
+  const wrap = document.getElementById('historial-peso-stats');
+  const canvasEl = document.getElementById('historialPesoChart');
+  if(!wrap || !canvasEl) return;
+
+  if(chartInst.historial){ chartInst.historial.destroy(); chartInst.historial=null; }
+
+  if(!records || records.length===0){
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const first = records[0], last = records[records.length-1];
+  const totalKg = (first.peso - last.peso);
+  const days = Math.max(1, Math.round((new Date(last.fecha)-new Date(first.fecha))/86400000));
+  const months = Math.max(days/30.4, 0.1);
+  const avgMonth = totalKg/months;
+  const totalPct = first.peso ? (totalKg/first.peso*100) : 0;
+
+  const fmtSigned=(v,u)=>`${v>0?'-':v<0?'+':''}${Math.abs(v).toFixed(1)}${u}`;
+  wrap.innerHTML = `
+    <div class="hist-stat"><div class="hl">Peso Inicial</div><div class="hv">${first.peso} kg</div></div>
+    <div class="hist-stat"><div class="hl">Peso Actual</div><div class="hv">${last.peso} kg</div></div>
+    <div class="hist-stat"><div class="hl">Total</div><div class="hv ${totalKg>0?'good':totalKg<0?'bad':''}">${fmtSigned(totalKg,' kg')}</div></div>
+    <div class="hist-stat"><div class="hl">Prom. Mensual</div><div class="hv ${avgMonth>0?'good':avgMonth<0?'bad':''}">${fmtSigned(avgMonth,' kg')}</div></div>
+  `;
+
+  if(records.length<2) return;
+
+  const labels = records.map(r=>fmtDate(r.fecha));
+  const data   = records.map(r=>r.peso);
+  const ctx    = canvasEl.getContext('2d');
+  const h      = canvasEl.offsetHeight||220;
+  const grad   = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,'#00d4aa55');
+  grad.addColorStop(1,'#00d4aa00');
+
+  chartInst.historial = new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'Peso (kg)', data,
+      borderColor:'#00d4aa', backgroundColor:grad,
+      borderWidth:2.5,
+      pointBackgroundColor: data.map((v,i)=> i===0||data[i-1]==null ? '#00d4aa' : (v<data[i-1] ? '#00d4aa':'#ff6b6b')),
+      pointBorderColor:'#060d1a', pointBorderWidth:2,
+      pointRadius:5, pointHoverRadius:7,
+      fill:true, tension:0.35, spanGaps:true,
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false, animation:{duration:300},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#0d1f35', borderColor:'#00d4aa', borderWidth:1,
+          titleColor:'#e8f4f8', bodyColor:'#6a8fa8',
+          callbacks:{
+            afterLabel:(ti)=>{
+              const idx=ti.dataIndex; if(idx===0||data[idx-1]==null) return [];
+              const d=(data[idx]-data[idx-1]).toFixed(1);
+              return [`Cambio: ${d>0?'+':''}${d} kg`];
             }
           }
         }
